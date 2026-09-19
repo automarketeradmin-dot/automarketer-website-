@@ -17,6 +17,15 @@
 // This function is intentionally defensive: if the WhatsApp send fails, the
 // lead is still saved and marked whatsapp_notification_status = 'failed'
 // with the error recorded — the lead is never lost (brief Section 21).
+//
+// NOTE ON SPOTTER ACCOUNTS: this function only handles lead submissions
+// (Buy/Sell/Sell-through-Dream-Rides/Spotter/etc). Spotter registration and
+// login are a separate concern with their own table (public.spotter_accounts
+// — see supabase_schema.sql) and, once real, belong in their own Edge
+// Functions (e.g. register-spotter / login-spotter) built on Supabase Auth
+// rather than the frontend's current client-side SHA-256 password check.
+// This function only accepts an already-known spotter_account_id (passed
+// through as payload.spotter_account_id) to link a lead to its Spotter.
 // =============================================================================
 
 import { serve } from "https://deno.land/std@0.203.0/http/server.ts";
@@ -51,9 +60,9 @@ function isRateLimited(ip: string): boolean {
 
 type LeadPayload = {
   id: string;
-  lead_type: "buy" | "sell" | "spotter" | "insurance" | "contract" | "other";
+  lead_type: "buy" | "sell" | "sell_auction" | "spotter" | "insurance" | "contract" | "other";
   name?: string; phone?: string; email?: string; location?: string;
-  client_name?: string; client_phone?: string;
+  client_name?: string; client_phone?: string; spotter_account_id?: string | null;
   vehicle_make?: string; vehicle_model?: string; vehicle_year?: number;
   mileage?: number; transmission?: string; vehicle_condition?: string;
   budget?: number; asking_price?: number; description?: string;
@@ -196,6 +205,7 @@ serve(async (req) => {
     location: payload.location ?? null,
     client_name: payload.client_name ?? null,
     client_phone: payload.client_phone ?? null,
+    spotter_account_id: payload.spotter_account_id ?? null,
     vehicle_make: payload.vehicle_make ?? null,
     vehicle_model: payload.vehicle_model ?? null,
     vehicle_year: payload.vehicle_year ?? null,
