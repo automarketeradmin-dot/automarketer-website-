@@ -33,7 +33,10 @@
   --maxw:480px;
   --shadow-card:0 1px 2px rgba(31,41,51,.05), 0 6px 20px rgba(31,41,51,.06);
   --shadow-pop:0 10px 30px rgba(31,41,51,.14);
+  --surface-blur:rgba(255,255,255,.94);
+  color-scheme: light;
 }
+
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;background:var(--gray-light);color:var(--text-primary);}
 body{
@@ -52,7 +55,7 @@ button{font-family:inherit;}
 input,select,textarea{font-family:inherit;}
 
 /* ---- site navigation (real website nav — dropdown + mobile hamburger) ---- */
-.site-nav{border-bottom:1px solid var(--gray-medium);position:sticky;top:0;background:rgba(255,255,255,.95);backdrop-filter:blur(6px);z-index:30;}
+.site-nav{border-bottom:1px solid var(--gray-medium);position:sticky;top:0;background:var(--surface-blur);backdrop-filter:blur(6px);z-index:30;}
 .nav-row{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;gap:14px;position:relative;}
 .nav-logo{display:flex;line-height:0;}
 .nav-burger{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:8px;border:1.4px solid var(--gray-medium);background:var(--white);font-size:16px;cursor:pointer;color:var(--text-primary);}
@@ -98,7 +101,7 @@ input,select,textarea{font-family:inherit;}
 /* ---- layout scaffolds ---- */
 .screen{flex:1;display:flex;flex-direction:column;padding:20px 20px 100px;animation:rise .32s ease both;}
 @keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-.topbar{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--gray-medium);position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);z-index:20;}
+.topbar{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--gray-medium);position:sticky;top:0;background:var(--surface-blur);backdrop-filter:blur(6px);z-index:20;}
 .back-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--gray-medium);background:var(--white);color:var(--text-primary);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;flex:none;}
 .topbar-title{font-size:14px;color:var(--text-secondary);flex:1;}
 .topbar-title b{color:var(--text-primary);font-weight:600;}
@@ -221,6 +224,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .badge.closed,.badge.unqualified,.badge.notinterested{background:var(--gray-light);color:var(--text-secondary);}
 .badge.progress,.badge.negotiating{background:var(--primary-teal-tint);color:var(--primary-teal-dark);}
 .badge.dup{background:rgba(193,59,78,.13);color:var(--bad);}
+.badge.pending{background:rgba(184,121,30,.14);color:var(--warn);}
+.badge.verified{background:rgba(46,143,92,.14);color:var(--good);}
+.badge.rejected{background:rgba(193,59,78,.13);color:var(--bad);}
 .badge.priority-high{background:rgba(184,121,30,.14);color:var(--warn);}
 .badge.priority-urgent{background:rgba(193,59,78,.13);color:var(--bad);}
 .lead-name{font-weight:600;font-size:15px;margin:6px 0 2px;color:var(--text-primary);}
@@ -274,6 +280,17 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .founder-name{font-weight:700;font-size:15px;margin:0;color:var(--text-primary);}
 .founder-title{font-size:12.5px;color:var(--text-secondary);margin:2px 0 0;}
 
+/* ---- journey tracker (confirmation screen) ---- */
+.journey-track{display:flex;align-items:flex-start;width:100%;max-width:360px;margin:6px 0;}
+.journey-item{display:flex;flex-direction:column;align-items:center;text-align:center;flex:1;}
+.journey-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;}
+.journey-item.done .journey-dot{background:var(--good);color:#fff;}
+.journey-item.current .journey-dot{background:var(--primary-teal);color:#fff;box-shadow:0 0 0 4px var(--primary-teal-tint);}
+.journey-item.future .journey-dot{background:var(--gray-medium);color:var(--text-secondary);}
+.journey-label{font-size:10.5px;color:var(--text-secondary);margin-top:6px;line-height:1.3;}
+.journey-item.current .journey-label{color:var(--text-primary);font-weight:600;}
+.journey-line{flex:0 0 20px;height:2px;background:var(--gray-medium);margin-top:13px;}
+
 /* ---- agreement box (Buyer/Seller/Spotter Agreements) ---- */
 .agreement-box{background:var(--white);border:1.4px solid var(--gray-medium);border-radius:var(--radius-card);padding:16px;margin-top:16px;}
 .agreement-heading{font-size:12px;font-weight:700;letter-spacing:.3px;color:var(--primary-teal-dark);margin:0 0 10px;text-transform:uppercase;}
@@ -301,6 +318,35 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .dr-logo-card{display:inline-block;background:#000;border-radius:14px;padding:18px 22px;margin-bottom:14px;}
 .dr-logo{display:block;height:46px;width:auto;}
 .dr-tagline{font-family:'Space Grotesk';font-weight:700;letter-spacing:.4px;color:var(--primary-teal-dark);font-size:14px;margin:0;text-transform:uppercase;}
+@media (prefers-color-scheme: dark){
+  :root{
+    --primary-teal:#2BA6BC;
+    --primary-teal-dark:#8FD6E3;
+    --primary-teal-light:#3F7C87;
+    --primary-teal-tint:#123339;
+    --white:#1A1F22;
+    --gray-light:#20262A;
+    --gray-medium:#3A4147;
+    --gray-dark:#EDEFEF;
+    --text-primary:#EDEFEF;
+    --text-secondary:#A8B0B5;
+    --text-tertiary:#7A8286;
+    --good:#3DBE7E;
+    --warn:#D9A13B;
+    --bad:#E5677C;
+    --shadow-card:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    --shadow-pop:0 10px 34px rgba(0,0,0,.5);
+    --surface-blur:rgba(20,24,26,.88);
+    color-scheme: dark;
+  }
+  html,body{background:#101315;}
+  /* The AutoMarketer and Dream Rides logo assets have their own opaque
+     backgrounds (white / black respectively) that must never be recoloured —
+     give them a small light card behind them so they still sit cleanly on
+     dark surfaces instead of looking like a stray white box. */
+  .brand-logo-lg, .site-header .brand-logo, .nav-logo .brand-logo{ background:#fff; padding:8px 12px; border-radius:10px; }
+  .footer .brand-logo{ background:#fff; padding:6px 10px; border-radius:8px; }
+}
 </style>
 </head>
 <body>
@@ -324,6 +370,10 @@ const DREAM_RIDES_LOGO_DATA_URI = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ
 
 /* ---------------------------- CONFIGURATION ---------------------------- */
 const CONFIG = {
+  // Live Supabase Edge Function that saves leads to the database and
+  // triggers the WhatsApp notification. Deployed with --no-verify-jwt,
+  // so no API key is required from the browser — see chat notes.
+  SUPABASE_FUNCTION_URL: "https://sjmkybnkywercnujckit.supabase.co/functions/v1/submit-lead",
   BUSINESS_NAME: "AutoMarketer",
   AUTOMARKETER_WHATSAPP_NUMBER: "27754910677", // wa.me format, no plus/spaces
   AUTOMARKETER_WHATSAPP_DISPLAY: "075 491 0677",
@@ -356,6 +406,17 @@ const CONFIG = {
     "If the vehicle is successfully sold, the applicable Dream Rides auction terms and conditions apply"
   ],
   DREAM_RIDES_DISCLAIMER: "AutoMarketer is not Dream Rides and does not own or operate the Dream Rides auction platform. Dream Rides is an independent external auction platform, and its own terms, processes and conditions apply to any transaction conducted through it. AutoMarketer does not guarantee a sale, a particular selling price, a successful auction, a number of bids, or a specific timeframe.",
+
+  // Commission structure — regular network/dealership sales vs. Dream Rides
+  // auction sales work differently. Kept centralized here so the wording in
+  // the Sell modal, the Dream Rides page, and the Spotter Agreement always
+  // match if this ever needs to change.
+  SELL_COMMISSION_TEXT: "Where AutoMarketer facilitates a sale through its own network or a dealership connection, AutoMarketer's commission ranges from R2,000 to R20,000 depending on the deal, and is not charged to the seller's asking price.",
+  JOURNEY_STEPS: ["Request submitted", "AutoMarketer reviewing your request", "We'll be in touch on WhatsApp"],
+  AUCTION_ADMIN_FEE: 10000,
+  AUCTION_SPOTTER_SHARE: 5000,
+  AUCTION_AUTOMARKETER_SHARE: 5000,
+  AUCTION_ECONOMICS_TEXT: "When a vehicle sells through Dream Rides, a R10,000 admin fee is added on top of the seller's asking price to set the Reserve Price (Asking Price + R10,000). If the vehicle is successfully sold, that R10,000 is split — R5,000 to AutoMarketer and, where a Spotter referred the vehicle, R5,000 to that Spotter. Any amount the vehicle sells for above the Reserve Price is a surplus, which AutoMarketer keeps. This fee is only ever charged on a successful sale — never simply for submitting a vehicle.",
 
   SPOTTER_INTRO: "The AutoMarketer Spotters Network is a network of people who help identify genuine vehicle-buying opportunities and connect potential buyers with AutoMarketer.",
   SPOTTER_BODY: "A spotter may know someone who is looking for a vehicle. The spotter identifies the potential buyer and gathers their vehicle requirements. The opportunity is then submitted to AutoMarketer, which works to identify a suitable vehicle opportunity through its automotive network. Spotters can also help create awareness of available vehicles by sharing suitable vehicle opportunities with people who may be interested.",
@@ -397,10 +458,15 @@ const CONFIG = {
       label: "Seller Agreement",
       text: "By submitting this form, I confirm that the information I have supplied about my vehicle is accurate, and that I have the right or authority to submit this vehicle for sale. I agree to provide truthful information about the vehicle's condition, mileage, history and ownership.\n\nI understand that AutoMarketer operates as a vehicle selling brokerage/intermediary and does not guarantee a sale, a selling price, a buyer, or a timeframe. I understand that relevant external third-party terms may apply where applicable. I give AutoMarketer permission to market or share the relevant vehicle information with appropriate potential buyers or automotive partners. I confirm that I will not knowingly provide false or misleading information. I understand that any applicable fees, commissions or administrative charges will be communicated separately where relevant."
     },
+    sell_auction: {
+      heading: "PLEASE READ THIS AGREEMENT BEFORE SUBMITTING YOUR VEHICLE TO DREAM RIDES.",
+      label: "Seller Agreement (Dream Rides Auction)",
+      text: "By submitting this form, I confirm that the information I have supplied about my vehicle is accurate, and that I have the right or authority to submit this vehicle for sale through the Dream Rides auction platform. I agree to provide truthful information about the vehicle's condition, mileage, history and ownership.\n\nRESERVE PRICE & ADMIN FEE: I understand a R10,000 admin fee is added on top of my asking price to set the Reserve Price (Asking Price + R10,000). If my vehicle is successfully sold through the Dream Rides auction process, that R10,000 admin fee is split — R5,000 to AutoMarketer and, where a Spotter referred my vehicle, R5,000 to that Spotter. Any amount the vehicle sells for above the Reserve Price is a surplus, which AutoMarketer keeps. This fee only applies on a successful sale.\n\nAUCTION PERIOD: The intended auction period is a maximum of 7 days from the date my vehicle is placed on auction, subject to Dream Rides' own rules and processes. I understand AutoMarketer does not own or operate Dream Rides, and does not guarantee a sale, a particular price, or a sale within this period.\n\nI understand that relevant Dream Rides terms apply, that AutoMarketer may market or share my vehicle information with Dream Rides and potential buyers for this purpose, and I confirm I will not knowingly provide false or misleading information."
+    },
     spotter: {
       heading: "PLEASE READ THIS AGREEMENT BEFORE SUBMITTING YOUR BUYER LEAD.",
       label: "Spotter Network Agreement",
-      text: "By submitting this lead, I confirm that the information I have provided about myself and my client is accurate to the best of my knowledge, and that this is a genuine lead — not a fake, misleading, or duplicate submission. I confirm I am submitting this lead as a Spotter — not as AutoMarketer, a dealership, a finance provider, an insurer, or any other third-party business. I understand AutoMarketer will review the submitted opportunity and work to identify a suitable vehicle opportunity through its automotive network, and that submitting a lead does not automatically guarantee any commission.\n\nCONFIDENTIALITY & NON-CIRCUMVENTION: I agree to keep confidential any AutoMarketer introductions, dealership relationships, network information, and transaction details I become aware of through the Spotters Network, and not to circumvent AutoMarketer by dealing directly with an introduced buyer, seller, or dealership to avoid AutoMarketer's involvement in a pending or protected opportunity.\n\nDREAM RIDES AUCTION COMMISSION: For a qualifying vehicle submitted through AutoMarketer and successfully sold through the applicable external auction process, I will receive a fixed commission of R5,000. This amount does not increase or decrease, and is not a percentage of the vehicle sale price or auction surplus. This commission is only payable once the applicable vehicle has been successfully sold through the relevant auction process and the conditions for payment have been met — submitting a vehicle alone does not guarantee this payment.\n\nAUCTION PERIOD: Where a vehicle is placed on the applicable auction platform, the intended auction period is limited to a maximum of 7 days from the date the vehicle is placed on auction, subject to the applicable external auction platform's own rules and processes. AutoMarketer does not guarantee a sale within this period."
+      text: "By submitting this lead, I confirm that the information I have provided about myself and my client is accurate to the best of my knowledge, and that this is a genuine lead — not a fake, misleading, or duplicate submission. I confirm I am submitting this lead as a Spotter — not as AutoMarketer, a dealership, a finance provider, an insurer, or any other third-party business. I understand AutoMarketer will review the submitted opportunity and work to identify a suitable vehicle opportunity through its automotive network, and that submitting a lead does not automatically guarantee any commission.\n\nCONFIDENTIALITY & NON-CIRCUMVENTION: I agree to keep confidential any AutoMarketer introductions, dealership relationships, network information, and transaction details I become aware of through the Spotters Network, and not to circumvent AutoMarketer by dealing directly with an introduced buyer, seller, or dealership to avoid AutoMarketer's involvement in a pending or protected opportunity.\n\nCOMMISSION — NETWORK/DEALERSHIP SALE: Where a vehicle I referred is sold through AutoMarketer's own network or a dealership connection (not through Dream Rides), any applicable Spotter commission ranges from R2,000 to R20,000 depending on the deal, communicated separately once applicable.\n\nCOMMISSION — DREAM RIDES AUCTION SALE: Where a vehicle I referred is submitted through AutoMarketer and successfully sold through Dream Rides, a R10,000 admin fee is added to the seller's asking price to set the Reserve Price. Of that R10,000, I will receive a fixed R5,000 commission and AutoMarketer retains R5,000. This amount does not increase or decrease, and is not a percentage of the sale price. It is only payable once the vehicle has actually been sold through the auction process — submitting a vehicle alone does not guarantee this payment. Any amount the vehicle sells for above the Reserve Price is a surplus retained by AutoMarketer, not part of my commission.\n\nAUCTION PERIOD: Where a vehicle is placed on the applicable auction platform, the intended auction period is limited to a maximum of 7 days from the date the vehicle is placed on auction, subject to the applicable external auction platform's own rules and processes. AutoMarketer does not guarantee a sale within this period."
     }
   },
 
@@ -432,7 +498,7 @@ const CONFIG = {
   // they're just gated behind a "Coming Soon" screen until switched on.
   FEATURES: { insurance: false, contract: false },
 
-  LEAD_PREFIXES: { buy: "AM-BUY", sell: "AM-SELL", insurance: "AM-INS", spotter: "AM-SPOT", contract: "AM-CON", other: "AM-OTHER" },
+  LEAD_PREFIXES: { buy: "AM-BUY", sell: "AM-SELL", sell_auction: "AM-AUCT", insurance: "AM-INS", spotter: "AM-SPOT", contract: "AM-CON", other: "AM-OTHER" },
   ADMIN_PASSWORD: "automarketer2026", // demo-only client-side gate — see disclosure
   MAX_PHOTOS: 8,
   MAX_PHOTO_DIM: 1000,
@@ -468,7 +534,8 @@ const state = {
   admin: { authed: false, tab: "overview", search: "", typeFilter: "all", statusFilter: "all", sort: "newest", openLeadId: null, leads: [] },
   nav: { mobileOpen: false, servicesOpen: false },
   modal: null, // null | "buyInfo" | "sellInfo" — overlay only, never touches form state underneath
-  cookie: { decided: false, analytics: true, prefsOpen: false }
+  cookie: { decided: false, analytics: true, prefsOpen: false },
+  spotterAuth: { session: null, view: "login", error: "" } // view: "login" | "register"
 };
 
 /* ------------------------------ STORAGE ---------------------------------
@@ -499,6 +566,60 @@ async function stGetPersonal(key) {
 async function stSetPersonal(key, val) {
   try { await window.storage.set(key, JSON.stringify(val), false); return true; }
   catch (e) { return false; }
+}
+
+/* ============================ SPOTTER ACCOUNTS =============================
+   A real client-side account system (email+password, individual accounts)
+   so Spotters can log in and see their own submissions. Passwords are
+   hashed with the browser's real Web Crypto API (SHA-256) rather than
+   stored as plain text — but this is still NOT production-grade auth (no
+   salting, and anyone who can read this environment's shared storage can
+   read the hashes). Real deployment needs proper server-side auth
+   (e.g. Supabase Auth) — see chat notes.
+--------------------------------------------------------------------------*/
+async function hashPassword(pw) {
+  const enc = new TextEncoder().encode(pw);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+function spotterKey(email) { return `spotteracct:${String(email).trim().toLowerCase()}`; }
+
+async function registerSpotter(data) {
+  const key = spotterKey(data.email);
+  const existing = await stGet(key);
+  if (existing) return { ok: false, error: "An account with this email already exists — try logging in instead." };
+  const passwordHash = await hashPassword(data.password);
+  const account = {
+    id: uidShort() + uidShort(),
+    fullName: data.fullName, whatsapp: data.whatsapp, email: data.email.trim().toLowerCase(),
+    passwordHash, verificationStatus: "Pending",
+    idPhoto: (data.idPhoto && data.idPhoto[0]) || null,
+    createdAt: Date.now()
+  };
+  await stSet(key, account);
+  return { ok: true, account };
+}
+async function loginSpotter(email, password) {
+  const account = await stGet(spotterKey(email));
+  if (!account) return { ok: false, error: "No account found with that email." };
+  const hash = await hashPassword(password);
+  if (hash !== account.passwordHash) return { ok: false, error: "Incorrect password." };
+  return { ok: true, account };
+}
+function spotterPublic(account) {
+  // Never keep the password hash in memory/session longer than needed.
+  const { passwordHash, ...pub } = account;
+  return pub;
+}
+async function setSpotterSession(account) {
+  state.spotterAuth.session = spotterPublic(account);
+  await stSetPersonal("spotter_session", { id: account.id, email: account.email });
+}
+async function logoutSpotter() {
+  state.spotterAuth.session = null;
+  await stSetPersonal("spotter_session", null);
+  state.screen = "spotters";
+  render();
 }
 
 async function nextLeadId(typeKey) {
@@ -577,6 +698,21 @@ function renderProcessSteps(steps) {
     </div>`).join("")}
   </div>`;
 }
+/* "Where's my request right now" tracker — shown right after submission.
+   Small, honest touch (no fake stats): it only ever shows real state
+   (submitted, then under review), reassuring the customer their request
+   actually went somewhere instead of vanishing into a form. */
+function renderJourneyTracker(currentIndex, steps) {
+  return `<div class="journey-track">
+    ${steps.map((s, i) => {
+      const state_ = i < currentIndex ? "done" : i === currentIndex ? "current" : "future";
+      return `<div class="journey-item ${state_}">
+        <div class="journey-dot">${state_ === "done" ? "✓" : i + 1}</div>
+        <div class="journey-label">${escapeHtml(s)}</div>
+      </div>`;
+    }).join(`<div class="journey-line"></div>`)}
+  </div>`;
+}
 
 /* ============================== INFO MODAL =================================
    A pure overlay: opening/closing it never changes state.screen, state.data,
@@ -604,7 +740,7 @@ function renderModalContent(name) {
       <ul class="modal-list">
         <li>Make</li><li>Model</li><li>Year</li><li>Mileage</li><li>Condition</li><li>Location</li><li>Asking price</li><li>Photos</li><li>Relevant vehicle information</li>
       </ul>
-      <p class="modal-p">AutoMarketer reviews the vehicle information and determines the appropriate selling opportunity. The vehicle may be marketed through AutoMarketer's automotive network and connected with potential buyers. Where applicable, AutoMarketer can also assist with submitting the vehicle to <button type="button" class="link-btn" data-navgo="dreamrides" data-closemodal="1">Dream Rides</button>, an independent external auction platform.</p>
+      <p class="modal-p">AutoMarketer reviews the vehicle information and determines the appropriate selling opportunity. ${escapeHtml(CONFIG.SELL_COMMISSION_TEXT)} Where applicable, AutoMarketer can also assist with submitting the vehicle to <button type="button" class="link-btn" data-navgo="dreamrides" data-closemodal="1">Dream Rides</button> — a separate, dedicated auction-selling process with its own fee structure.</p>
       ${renderProcessSteps(CONFIG.SELL_PROCESS)}
       <p class="modal-note">AutoMarketer facilitates the connection and does not guarantee a sale, price, or timeframe.</p>
     `;
@@ -693,7 +829,7 @@ function renderField(f) {
   const val = fieldVal(f.id);
   const reqTag = f.required ? `<span class="req">required</span>` : `<span class="opt">optional</span>`;
   let control = "";
-  if (f.type === "text" || f.type === "tel" || f.type === "email" || f.type === "number") {
+  if (f.type === "text" || f.type === "tel" || f.type === "email" || f.type === "number" || f.type === "password") {
     control = `<input class="ctrl" type="${f.type}" id="f_${f.id}" data-fid="${f.id}" placeholder="${escapeHtml(f.placeholder || "")}" value="${escapeHtml(val)}">`;
   } else if (f.type === "textarea") {
     control = `<textarea class="ctrl" id="f_${f.id}" data-fid="${f.id}" placeholder="${escapeHtml(f.placeholder || "")}">${escapeHtml(val)}</textarea>`;
@@ -709,7 +845,7 @@ function renderField(f) {
     const items = Array.isArray(val) ? val : [];
     control = `<div class="photo-grid" data-fid="${f.id}">` +
       items.map((p, i) => `<div class="photo-thumb">${p.isImage ? `<img src="${p.dataUrl}">` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--muted);padding:4px;text-align:center;">${escapeHtml(p.name)}</div>`}<button class="rm" data-role="rmphoto" data-fid="${f.id}" data-idx="${i}">✕</button></div>`).join("") +
-      (items.length < (f.maxItems || CONFIG.MAX_PHOTOS) ? `<label class="photo-add">+<input type="file" accept="image/*,.pdf" multiple data-role="photoinput" data-fid="${f.id}"></label>` : "") +
+      (items.length < (f.maxItems || CONFIG.MAX_PHOTOS) ? `<label class="photo-add">${f.capture ? "📷" : "+"}<input type="file" accept="image/*${f.capture ? "" : ",.pdf"}" ${f.capture ? `capture="${f.capture}"` : "multiple"} data-role="photoinput" data-fid="${f.id}"></label>` : "") +
       `</div><div class="help">${items.length}/${f.maxItems || CONFIG.MAX_PHOTOS} uploaded · images are compressed for storage</div>`;
   } else if (f.type === "consent") {
     control = `<label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;">
@@ -805,8 +941,17 @@ function attachFieldListeners(container, onAnyChange) {
   container.querySelectorAll("[data-fid]").forEach(el => {
     if (el.matches("input,select,textarea") && !el.hasAttribute("data-role")) {
       const fid = el.getAttribute("data-fid");
-      el.addEventListener("input", () => { state.data[fid] = el.value; });
-      el.addEventListener("change", () => { state.data[fid] = el.value; onAnyChange(); });
+      if (el.tagName === "SELECT") {
+        // Selects drive conditional field visibility, so a real re-render is needed.
+        el.addEventListener("change", () => { state.data[fid] = el.value; onAnyChange(); });
+      } else {
+        // Text/email/tel/number/textarea: update state silently on every
+        // keystroke, but deliberately do NOT re-render on "change" here —
+        // that event also fires on blur (e.g. clicking into the next
+        // field), and re-rendering then would rebuild the very field the
+        // person just clicked into, kicking their focus/typing out mid-flow.
+        el.addEventListener("input", () => { state.data[fid] = el.value; });
+      }
     }
   });
   container.querySelectorAll('[data-role="chip"]').forEach(btn => {
@@ -853,6 +998,7 @@ FLOWS.buy = {
   key: "buy", title: "Buy a Car", intro: "A few quick questions so we can match you to the right vehicle and the right deal.",
   steps: [
     { title: "Your details", sub: "So we know who we're helping.", fields: [
+      { id: "title", label: "Title", type: "select", required: true, options: ["Mr", "Miss", "Mrs", "Ms"] },
       { id: "firstName", label: "First name", type: "text", required: true },
       { id: "surname", label: "Surname", type: "text", required: true },
       { id: "whatsapp", label: "WhatsApp / mobile number", type: "tel", required: true, placeholder: "075 491 0677" },
@@ -935,6 +1081,7 @@ FLOWS.sell = {
   key: "sell", title: "Sell a Car", intro: "Tell us about your vehicle and we'll come back with next steps.",
   steps: [
     { title: "Seller details", sub: "So we know who we're speaking to.", fields: [
+      { id: "title", label: "Title", type: "select", required: true, options: ["Mr", "Miss", "Mrs", "Ms"] },
       { id: "firstName", label: "First name", type: "text", required: true },
       { id: "surname", label: "Surname", type: "text", required: true },
       { id: "whatsapp", label: "WhatsApp / mobile number", type: "tel", required: true },
@@ -982,6 +1129,42 @@ FLOWS.sell = {
   summary(d) {
     const veh = [d.make, d.model, d.year].filter(Boolean).join(" ");
     return [veh || "Vehicle", `Asking: ${money(d.askingPrice) || "TBC"}`].filter(Boolean).join(" · ");
+  }
+};
+
+FLOWS.sell_auction = {
+  key: "sell_auction", title: "Sell Through Dream Rides", intro: "A dedicated form for selling your vehicle through the Dream Rides auction — not the general AutoMarketer network.",
+  steps: [
+    { title: "Seller details", sub: "So we know who we're speaking to.", fields: [
+      { id: "title", label: "Title", type: "select", required: true, options: ["Mr", "Miss", "Mrs", "Ms"] },
+      { id: "firstName", label: "First name", type: "text", required: true },
+      { id: "surname", label: "Surname", type: "text", required: true },
+      { id: "whatsapp", label: "WhatsApp / mobile number", type: "tel", required: true },
+      { id: "email", label: "Email", type: "email", required: true },
+      { id: "province", label: "Province", type: "select", required: true, options: SA_PROVINCES },
+      { id: "city", label: "City / town / suburb", type: "text", required: true },
+      { id: "registeredOwner", label: "Are you the registered owner?", type: "radio", required: true, options: ["Yes", "No"] }
+    ]},
+    { title: "Vehicle information", sub: "What's going up for auction.", fields: [
+      { id: "make", label: "Make", type: "text", required: true },
+      { id: "model", label: "Model", type: "text", required: true },
+      { id: "variant", label: "Variant", type: "text", required: false },
+      { id: "year", label: "Year", type: "number", required: true },
+      { id: "mileage", label: "Mileage (km)", type: "number", required: true },
+      { id: "exteriorCondition", label: "Vehicle condition", type: "select", required: true, options: CONDITIONS },
+      { id: "outstandingFinance", label: "Outstanding finance?", type: "radio", required: true, options: ["Yes", "No"] },
+      { id: "settlementAmount", label: "Settlement amount", type: "number", required: false, showIf: d => d.outstandingFinance === "Yes" },
+      { id: "askingPrice", label: "Asking price", type: "number", required: true, help: "A R10,000 admin fee is added to this to set the auction Reserve Price — see the explanation below before you submit." },
+      { id: "additionalNotes", label: "Anything else about the vehicle?", type: "textarea", required: false }
+    ]},
+    { title: "Photos", sub: "Front, rear, sides, interior, dashboard, odometer, engine bay, wheels/tyres, and any damage — the more the better.", fields: [
+      { id: "photos", label: "Upload vehicle photos", type: "photos", required: true, maxItems: 8 }
+    ]}
+  ],
+  summary(d) {
+    const veh = [d.make, d.model, d.year].filter(Boolean).join(" ");
+    const reserve = d.askingPrice ? Number(d.askingPrice) + CONFIG.AUCTION_ADMIN_FEE : null;
+    return [veh || "Vehicle", `Asking: ${money(d.askingPrice) || "TBC"}`, reserve ? `Reserve: ${money(reserve)}` : ""].filter(Boolean).join(" · ");
   }
 };
 
@@ -1080,6 +1263,7 @@ FLOWS.spotter = {
       { id: "sVariant", label: "Variant", type: "text", required: false, showIf: d => d.submissionType === "Seller" },
       { id: "sYear", label: "Year", type: "number", required: false, showIf: d => d.submissionType === "Seller" },
       { id: "sMileage", label: "Mileage", type: "number", required: false, showIf: d => d.submissionType === "Seller" },
+      { id: "sVin", label: "VIN / chassis number", type: "text", required: false, showIf: d => d.submissionType === "Seller" },
       { id: "sAskingPrice", label: "Asking price", type: "number", required: false, showIf: d => d.submissionType === "Seller" },
       { id: "sOutstandingFinance", label: "Outstanding finance?", type: "radio", required: false, options: ["Yes","No"], showIf: d => d.submissionType === "Seller" },
       { id: "sCondition", label: "Vehicle condition", type: "select", required: false, options: CONDITIONS, showIf: d => d.submissionType === "Seller" },
@@ -1182,42 +1366,50 @@ FLOWS.other = {
 
 /* ============================ LEAD / MESSAGING ============================ */
 function getCustomerName(d, key) {
-  if (key === "buy" || key === "sell") return `${d.firstName || ""} ${d.surname || ""}`.trim();
+  if (key === "buy" || key === "sell" || key === "sell_auction") return `${d.title ? d.title + " " : ""}${d.firstName || ""} ${d.surname || ""}`.trim();
   if (key === "contract") return d.name || "";
   return d.fullName || "";
 }
+// "Mr Anderson" style — used specifically in the WhatsApp message text so
+// AutoMarketer can tell people apart at a glance, per Amo's preference.
+function formalName(d) {
+  return `${d.title || ""} ${d.surname || ""}`.trim() || d.firstName || "the customer";
+}
 function getLocation(d, key) {
-  if (key === "buy" || key === "sell" || key === "insurance") return [d.city, d.province].filter(Boolean).join(", ");
+  if (key === "buy" || key === "sell" || key === "sell_auction" || key === "insurance") return [d.city, d.province].filter(Boolean).join(", ");
   if (key === "contract") return [d.location, d.province].filter(Boolean).join(", ");
   return d.location || d.clientLocation || d.sLocation || "";
 }
 function leadTypeLabel(key) {
-  return { buy: "Vehicle Buyer", sell: "Vehicle Seller", insurance: "Insurance", spotter: "Spotter Network", contract: "Truck / Contract", other: "Other Service" }[key] || key;
+  return { buy: "Vehicle Buyer", sell: "Vehicle Seller", sell_auction: "Dream Rides Auction", insurance: "Insurance", spotter: "Spotter Network", contract: "Truck / Contract", other: "Other Service" }[key] || key;
 }
 function prefillName(key) {
   const { firstName, surname } = state.customer;
-  if (key === "buy" || key === "sell") { state.data.firstName = firstName; state.data.surname = surname; }
+  if (key === "buy" || key === "sell" || key === "sell_auction") { state.data.firstName = firstName; state.data.surname = surname; }
   else if (key === "contract") { state.data.name = `${firstName} ${surname}`.trim(); }
   else { state.data.fullName = `${firstName} ${surname}`.trim(); }
 }
 
 function buildWhatsAppText(lead) {
   const d = lead.data || {};
+  const who = formalName(d);
   if (lead.type === "buy") {
-    const vehicle = [d.make, d.model].filter(Boolean).join(" ") || "a vehicle";
+    const vehicle = [d.make, d.model].filter(Boolean).join(" ");
+    const wantLine = vehicle ? `I'm looking for a ${vehicle}.` : (d.description ? `I'm looking for a car I can use for ${d.description}.` : "I'm looking for a vehicle.");
     const bodyLines = [
-      `Hi, my name is ${lead.customerName || "-"}.`,
-      `I'm looking for a ${vehicle}.`,
+      `Hi, my name is ${who}.`,
+      wantLine,
       d.maxPrice ? `My budget is ${money(d.maxPrice)}.` : "",
-      d.additionalRequirements || d.description || "",
+      d.additionalRequirements || "",
+      lead.location ? `I'm based in ${lead.location}.` : "",
       `My number is ${lead.whatsappDisplay || "-"}.`
     ].filter(Boolean);
-    return bodyLines.join("\n") + `\n\nRef: ${lead.id}`;
+    return bodyLines.join("\n");
   }
   if (lead.type === "sell") {
     const vehicle = [d.year, d.make, d.model].filter(Boolean).join(" ") || "a vehicle";
     const bodyLines = [
-      `Hi, my name is ${lead.customerName || "-"}.`,
+      `Hi, my name is ${who}.`,
       `I have a ${vehicle} that I would like to sell.`,
       d.mileage ? `Mileage: ${d.mileage}` : "",
       d.exteriorCondition ? `Condition: ${d.exteriorCondition}` : "",
@@ -1226,7 +1418,21 @@ function buildWhatsAppText(lead) {
       `Contact number: ${lead.whatsappDisplay || "-"}`
     ].filter(Boolean);
     if (d.additionalNotes) bodyLines.push("", "Additional information:", d.additionalNotes);
-    return bodyLines.join("\n") + `\n\nRef: ${lead.id}`;
+    return bodyLines.join("\n");
+  }
+  if (lead.type === "sell_auction") {
+    const vehicle = [d.year, d.make, d.model].filter(Boolean).join(" ") || "a vehicle";
+    const bodyLines = [
+      `Hi, my name is ${who}.`,
+      `I'd like to sell my ${vehicle} through Dream Rides.`,
+      d.mileage ? `Mileage: ${d.mileage}` : "",
+      d.exteriorCondition ? `Condition: ${d.exteriorCondition}` : "",
+      d.askingPrice ? `Asking Price: ${money(d.askingPrice)}` : "",
+      lead.location ? `Location: ${lead.location}` : "",
+      `Contact number: ${lead.whatsappDisplay || "-"}`
+    ].filter(Boolean);
+    if (d.additionalNotes) bodyLines.push("", "Additional information:", d.additionalNotes);
+    return bodyLines.join("\n");
   }
   if (lead.type === "spotter" && d.submissionType === "Buyer") {
     const vehicle = [d.wantedMake, d.wantedModel].filter(Boolean).join(" ") || "a vehicle";
@@ -1240,14 +1446,13 @@ function buildWhatsAppText(lead) {
       d.buyerAdditional || "",
       `Spotter number: ${lead.whatsappDisplay || "-"}`
     ].filter(Boolean);
-    return bodyLines.join("\n") + `\n\nRef: ${lead.id}`;
+    return bodyLines.join("\n");
   }
   // Generic structured message for spotter seller referrals, insurance,
-  // contracts, and the catch-all "other" type.
+  // contracts, and the catch-all "other" type. The Lead ID intentionally
+  // does NOT appear here — it's for the AutoMarketer admin dashboard only.
   const lines = [
     `AUTOMARKETER ${lead.type === "buy" ? "BUYER" : lead.type.toUpperCase()} LEAD`,
-    "",
-    `Lead ID: ${lead.id}`,
     "",
     "Customer Details",
     `Name: ${lead.customerName || "-"}`,
@@ -1295,10 +1500,11 @@ function buildNormalizedRecord(key, data, ctx) {
     rec.vehicle_make = data.make || null; rec.vehicle_model = data.model || null; rec.vehicle_year = data.maxYear || data.minYear || null;
     rec.transmission = data.transmission || null; rec.budget = data.maxPrice || null;
     rec.description = data.description || data.additionalRequirements || null;
-  } else if (key === "sell") {
+  } else if (key === "sell" || key === "sell_auction") {
     rec.vehicle_make = data.make || null; rec.vehicle_model = data.model || null; rec.vehicle_year = data.year || null;
     rec.mileage = data.mileage || null; rec.transmission = data.transmission || null; rec.asking_price = data.askingPrice || null;
     rec.vehicle_condition = data.exteriorCondition || data.interiorCondition || null; rec.description = data.additionalNotes || null;
+    if (key === "sell_auction" && data.askingPrice) rec.description = `${rec.description || ""} [Reserve Price: ${money(Number(data.askingPrice) + CONFIG.AUCTION_ADMIN_FEE)}]`.trim();
   } else if (key === "spotter") {
     if (data.submissionType === "Buyer") {
       rec.client_name = data.clientName || null; rec.client_phone = data.clientWhatsapp || null;
@@ -1308,7 +1514,7 @@ function buildNormalizedRecord(key, data, ctx) {
       rec.client_name = data.sClientName || null; rec.client_phone = data.sClientWhatsapp || null;
       rec.vehicle_make = data.sMake || null; rec.vehicle_model = data.sModel || null; rec.vehicle_year = data.sYear || null;
       rec.mileage = data.sMileage || null; rec.asking_price = data.sAskingPrice || null; rec.vehicle_condition = data.sCondition || null;
-      rec.description = data.sellerAdditional || null;
+      rec.description = [data.sVin ? `VIN: ${data.sVin}` : "", data.sellerAdditional || ""].filter(Boolean).join(" · ") || null;
     } else {
       rec.description = data.otherDescription || null;
     }
@@ -1349,10 +1555,52 @@ async function submitLead() {
       customerName: name || "-", whatsappDisplay: phoneRaw, email: state.data.email || "",
       location, summary: flow.summary(state.data), data: state.data,
       agreementAccepted: !!state.data.agreementAccepted, agreementVersion: record.agreement_version,
+      spotterAccountId: (key === "spotter" && state.spotterAuth.session) ? state.spotterAuth.session.id : null,
       record // CRM/Supabase-ready normalized shape — see chat notes
     };
     await stSet(`lead:${id}`, lead);
     await logEvent("lead_submitted", { type: key, id });
+
+    // Send the lead to the live backend (Supabase Edge Function): saves it
+    // to the database and triggers the WhatsApp notification. This is
+    // deliberately non-blocking for the customer's flow — if it fails (bad
+    // connection, backend hiccup), the confirmation screen still shows and
+    // the local record above is unaffected; the lead just won't have
+    // reached Supabase yet.
+    try {
+      const photosPayload = [];
+      Object.keys(state.data).forEach(k => {
+        const v = state.data[k];
+        if (Array.isArray(v) && v.length && v[0] && typeof v[0] === "object" && "isImage" in v[0]) {
+          v.forEach(p => {
+            if (p.isImage && p.dataUrl) {
+              const m = /^data:([^;]+);base64,(.*)$/.exec(p.dataUrl);
+              if (m) photosPayload.push({ name: p.name, mimeType: m[1], base64: m[2] });
+            }
+          });
+        }
+      });
+      const backendPayload = {
+        id: record.id, lead_type: record.lead_type,
+        name: record.name, phone: record.phone, email: record.email, location: record.location,
+        client_name: record.client_name, client_phone: record.client_phone,
+        spotter_account_id: lead.spotterAccountId || null,
+        vehicle_make: record.vehicle_make, vehicle_model: record.vehicle_model, vehicle_year: record.vehicle_year,
+        mileage: record.mileage, transmission: record.transmission, vehicle_condition: record.vehicle_condition,
+        budget: record.budget, asking_price: record.asking_price, description: record.description,
+        agreement_accepted: record.agreement_accepted, agreement_version: record.agreement_version,
+        consent_status: record.consent_status, source: lead.source,
+        photos: photosPayload,
+        whatsapp_message: buildWhatsAppText(lead)
+      };
+      await fetch(CONFIG.SUPABASE_FUNCTION_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(backendPayload)
+      });
+    } catch (backendErr) {
+      console.error("Backend submission failed (lead still saved locally):", backendErr);
+    }
 
     if (window.Notification) {
       if (Notification.permission === "granted") new Notification("New AutoMarketer lead", { body: `${id} — ${name || "New lead"}` });
@@ -1383,9 +1631,6 @@ function screenLanding() {
       <div class="field"><label>Surname</label><input class="ctrl" id="ln_last" type="text" value="${escapeHtml(state.customer.surname)}" placeholder="Nkosi"></div>
       <button class="btn btn-primary" id="ln_continue" style="margin-top:6px;" disabled>Continue</button>
     </div>
-    <div style="text-align:center;">
-      <a href="#" id="ln_admin" style="font-size:12px;color:var(--muted-2);text-decoration:none;">AutoMarketer staff login</a>
-    </div>
   </div>
   ${renderFooter()}`;
 }
@@ -1398,7 +1643,6 @@ function bindLanding() {
     logEvent("name_captured");
     state.screen = "services"; render();
   });
-  document.getElementById("ln_admin").addEventListener("click", (e) => { e.preventDefault(); state.screen = "admin-login"; render(); });
   bindNav();
   bindFooterLinks();
 }
@@ -1549,7 +1793,8 @@ function goPrevStep() {
   let idx = state.stepIndex - 1;
   while (idx >= 0 && !flow.steps[idx].fields.filter(fieldVisible).some(f => f.type !== "heading")) idx--;
   if (idx < 0) {
-    if (["insurance", "spotter", "contract", "other"].includes(state.leadType)) { state.screen = "other-services"; }
+    if (state.leadType === "sell_auction") { state.screen = "dreamrides"; }
+    else if (["insurance", "spotter", "contract", "other"].includes(state.leadType)) { state.screen = "other-services"; }
     else { state.screen = "services"; }
     render(); return;
   }
@@ -1573,10 +1818,18 @@ function screenReview() {
     return rows ? `<div class="review-section"><h4>${escapeHtml(step.title)}</h4>${rows}</div>` : "";
   }).join("");
 
-  const agreement = CONFIG.AGREEMENTS[state.leadType]; // set for buy / sell / spotter only
+  const agreement = CONFIG.AGREEMENTS[state.leadType]; // set for buy / sell / sell_auction / spotter
   const agreementOk = !agreement || !!state.data.agreementAccepted;
   const consentOk = !!state.data.consent;
   const canSubmit = agreementOk && consentOk;
+
+  const auctionExplainer = state.leadType === "sell_auction" ? `
+    <div class="review-section">
+      <h4>How this works</h4>
+      <p style="font-size:13.5px;line-height:1.6;color:var(--text-secondary);margin:0 0 12px;">${escapeHtml(CONFIG.DREAM_RIDES_RELATIONSHIP)}</p>
+      ${renderProcessSteps(CONFIG.DREAM_RIDES_PROCESS)}
+      <p style="font-size:13.5px;line-height:1.6;color:var(--text-secondary);margin:14px 0 0;">${escapeHtml(CONFIG.AUCTION_ECONOMICS_TEXT)}</p>
+    </div>` : "";
 
   return `
   ${topbar("Review your request", true)}
@@ -1584,6 +1837,7 @@ function screenReview() {
     <h2 class="step-title">Review your request</h2>
     <p class="step-sub">Check everything looks right before we send this through.</p>
     ${sections}
+    ${auctionExplainer}
     ${agreement ? `
     <div class="agreement-box">
       <p class="agreement-heading">${escapeHtml(agreement.heading)}</p>
@@ -1597,7 +1851,7 @@ function screenReview() {
       <input type="checkbox" id="rv_consent" ${state.data.consent ? "checked" : ""}>
       <p>I consent to AutoMarketer contacting me about this request and sharing the relevant details with appropriate third parties (e.g. a dealership, lender, or partner) solely to provide the service I've asked for. See our <a href="#" id="rv_privacy">Privacy Policy</a>.</p>
     </div>
-    ${["buy", "sell"].includes(state.leadType) ? `<p class="help" style="margin-top:10px;">AutoMarketer acts as a broker and intermediary — see our <a href="#" id="rv_disclaimer">Brokerage Disclaimer</a> for how this connection works.</p>` : ""}
+    ${["buy", "sell", "sell_auction"].includes(state.leadType) ? `<p class="help" style="margin-top:10px;">AutoMarketer acts as a broker and intermediary — see our <a href="#" id="rv_disclaimer">Brokerage Disclaimer</a> for how this connection works.</p>` : ""}
     <div class="btn-row">
       <button class="btn btn-ghost" data-role="stepback">Edit</button>
       <button class="btn btn-primary" data-role="submit-lead" ${canSubmit ? "" : "disabled"}>Submit Request</button>
@@ -1623,7 +1877,8 @@ function bindReview() {
 /* ============================== SCREEN: CONFIRM ============================= */
 function screenConfirm() {
   const lead = state.lastLead;
-  const isBrokered = ["buy", "sell"].includes(lead.type);
+  const isBrokered = ["buy", "sell", "sell_auction"].includes(lead.type);
+  const isMySpotterLead = lead.type === "spotter" && state.spotterAuth.session;
   return `
   ${renderNav()}
   <div class="confirm-wrap">
@@ -1631,17 +1886,21 @@ function screenConfirm() {
     <h2 class="hl">Thank you, ${escapeHtml(state.customer.firstName)}.</h2>
     <p class="sub">${CONFIG.BUSINESS_NAME} will review your request and contact you regarding the next step.</p>
     <div class="lead-id-badge tabnum">${lead.id}</div>
+    ${renderJourneyTracker(1, CONFIG.JOURNEY_STEPS)}
     ${isBrokered ? `<p class="sub" style="font-size:13px;">We can't guarantee a specific vehicle, sale price, or finance/dealership approval — but we'll do our best to match this to the right opportunity. See our <a href="#" id="cf_disclaimer">Brokerage Disclaimer</a> for details.</p>` : ""}
     <div style="width:100%;display:flex;flex-direction:column;gap:10px;margin-top:10px;">
       <a class="btn btn-wa" href="${waLink(buildWhatsAppText(lead))}" target="_blank" rel="noopener">Chat with AutoMarketer on WhatsApp</a>
-      <button class="btn btn-ghost" id="cf_new">Start another request</button>
+      ${isMySpotterLead ? `<button class="btn btn-ghost" id="cf_dashboard">Back to your Spotter Dashboard</button>` : `<button class="btn btn-ghost" id="cf_new">Start another request</button>`}
     </div>
     <p class="help" style="margin-top:6px;">If WhatsApp doesn't open, you can reach us directly on ${CONFIG.AUTOMARKETER_WHATSAPP_DISPLAY}.</p>
   </div>`;
 }
 function bindConfirm() {
   bindNav();
-  document.getElementById("cf_new").addEventListener("click", () => { state.leadType = null; state.data = {}; state.screen = "services"; render(); });
+  const newBtn = document.getElementById("cf_new");
+  if (newBtn) newBtn.addEventListener("click", () => { state.leadType = null; state.data = {}; state.screen = "services"; render(); });
+  const dashBtn = document.getElementById("cf_dashboard");
+  if (dashBtn) dashBtn.addEventListener("click", () => { state.leadType = null; state.data = {}; state.screen = "spotter-dashboard"; render(); });
   const dl = document.getElementById("cf_disclaimer");
   if (dl) dl.addEventListener("click", (e) => { e.preventDefault(); state.legalReturn = "confirm"; state.screen = "disclaimer"; render(); });
 }
@@ -1715,15 +1974,145 @@ function screenSpotters() {
     </div>
     <div class="info-box" style="max-width:760px;margin:0 auto 24px;">${escapeHtml(CONFIG.SPOTTER_DISCLAIMER)}</div>
     <div style="text-align:center;">
-      <button class="btn btn-primary" style="width:auto;padding:14px 34px;" id="spotters_cta">Join the Spotters Network</button>
+      ${state.spotterAuth.session
+        ? `<button class="btn btn-primary" style="width:auto;padding:14px 34px;" id="spotters_dashboard_btn">Go to your Spotter Dashboard</button>`
+        : `<button class="btn btn-primary" style="width:auto;padding:14px 34px;" id="spotters_cta">Spotter Login / Register</button>`
+      }
     </div>
   </div>
   ${renderFooter()}`;
 }
 function bindSpotters() {
   bindNav();
-  document.getElementById("spotters_cta").addEventListener("click", () => startFlow("spotter"));
+  const ctaBtn = document.getElementById("spotters_cta");
+  if (ctaBtn) ctaBtn.addEventListener("click", () => {
+    state.data = {}; state.spotterAuth.view = "login"; state.spotterAuth.error = ""; state.screen = "spotter-auth"; render();
+  });
+  const dashBtn = document.getElementById("spotters_dashboard_btn");
+  if (dashBtn) dashBtn.addEventListener("click", () => { state.screen = "spotter-dashboard"; render(); });
   bindFooterLinks();
+}
+
+/* ============================== SCREEN: SPOTTER LOGIN/REGISTER ============= */
+const SPOTTER_LOGIN_FIELDS = [
+  { id: "loginEmail", label: "Email", type: "email", required: true },
+  { id: "loginPassword", label: "Password", type: "password", required: true }
+];
+const SPOTTER_REGISTER_FIELDS = [
+  { id: "fullName", label: "Full name", type: "text", required: true },
+  { id: "whatsapp", label: "WhatsApp / mobile number", type: "tel", required: true },
+  { id: "email", label: "Email", type: "email", required: true },
+  { id: "password", label: "Password", type: "password", required: true, help: "At least 6 characters." },
+  { id: "confirmPassword", label: "Confirm password", type: "password", required: true },
+  { id: "h_verify", type: "heading", label: "Identity verification" },
+  { id: "idPhoto", label: "ID document photo", type: "photos", required: true, maxItems: 1, help: "A clear photo of your ID or driver's licence — used to verify genuine Spotters." },
+  { id: "regConsent", label: "I consent to AutoMarketer verifying my identity and storing this information to manage my Spotter account.", type: "consent", required: true }
+];
+function screenSpotterAuth() {
+  const isLogin = state.spotterAuth.view === "login";
+  const fields = isLogin ? SPOTTER_LOGIN_FIELDS : SPOTTER_REGISTER_FIELDS;
+  return `
+  ${topbar(isLogin ? "Spotter Login" : "Register as a Spotter", true)}
+  <div class="screen">
+    <h2 class="step-title">${isLogin ? "Welcome back" : "Create your Spotter account"}</h2>
+    <p class="step-sub">${isLogin ? "Log in to submit clients and track your leads." : "Create your account once — then log in any time to submit clients and follow up."}</p>
+    ${state.spotterAuth.error ? `<div class="err" style="margin-bottom:14px;">${escapeHtml(state.spotterAuth.error)}</div>` : ""}
+    <div id="stepFields">${fields.map(renderField).join("")}</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" data-role="authsubmit">${isLogin ? "Log in" : "Create account"}</button>
+    </div>
+    <p class="help" style="text-align:center;margin-top:14px;">
+      ${isLogin ? `New Spotter? <a href="#" data-role="switchview">Register here</a>.` : `Already registered? <a href="#" data-role="switchview">Log in</a>.`}
+    </p>
+  </div>`;
+}
+function bindSpotterAuth() {
+  bindTopbarBack(() => { state.screen = "spotters"; render(); });
+  const container = document.getElementById("stepFields");
+  attachFieldListeners(container, () => render());
+  document.querySelectorAll('[data-role="switchview"]').forEach(a => a.addEventListener("click", (e) => {
+    e.preventDefault(); state.data = {}; state.spotterAuth.error = "";
+    state.spotterAuth.view = state.spotterAuth.view === "login" ? "register" : "login";
+    render();
+  }));
+  document.querySelector('[data-role="authsubmit"]').addEventListener("click", async () => {
+    const isLogin = state.spotterAuth.view === "login";
+    const fields = isLogin ? SPOTTER_LOGIN_FIELDS : SPOTTER_REGISTER_FIELDS;
+    readVisibleFieldsIntoState(fields);
+    if (!validateStep(fields)) return;
+    const btn = document.querySelector('[data-role="authsubmit"]');
+    btn.disabled = true; btn.textContent = "Please wait…";
+    if (isLogin) {
+      const result = await loginSpotter(state.data.loginEmail, state.data.loginPassword);
+      if (!result.ok) { state.spotterAuth.error = result.error; btn.disabled = false; btn.textContent = "Log in"; render(); return; }
+      await setSpotterSession(result.account);
+      state.data = {}; state.screen = "spotter-dashboard"; render();
+    } else {
+      if (state.data.password !== state.data.confirmPassword) {
+        state.spotterAuth.error = "Passwords don't match."; btn.disabled = false; btn.textContent = "Create account"; render(); return;
+      }
+      if (state.data.password.length < 6) {
+        state.spotterAuth.error = "Password must be at least 6 characters."; btn.disabled = false; btn.textContent = "Create account"; render(); return;
+      }
+      const result = await registerSpotter(state.data);
+      if (!result.ok) { state.spotterAuth.error = result.error; btn.disabled = false; btn.textContent = "Create account"; render(); return; }
+      await setSpotterSession(result.account);
+      await logEvent("spotter_registered");
+      state.data = {}; state.screen = "spotter-dashboard"; render();
+    }
+  });
+}
+
+/* ============================== SCREEN: SPOTTER DASHBOARD =================== */
+async function loadSpotterOwnLeads() {
+  const keys = await stList("lead:");
+  const items = await Promise.all(keys.map(k => stGet(k.key || k)));
+  const myId = state.spotterAuth.session.id;
+  return items.filter(l => l && l.type === "spotter" && l.spotterAccountId === myId).sort((a, b) => b.createdAt - a.createdAt);
+}
+function screenSpotterDashboard() {
+  const session = state.spotterAuth.session;
+  if (!session) return screenSpotterAuth();
+  const verifBadgeClass = session.verificationStatus === "Verified" ? "qualified" : session.verificationStatus === "Rejected" ? "closed" : "contacted";
+  return `
+  ${topbar("Spotter Dashboard", false)}
+  <div class="screen">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+      <div>
+        <h2 class="step-title" style="margin-bottom:2px;">Welcome back, ${escapeHtml(session.fullName.split(" ")[0])}</h2>
+        <p class="step-sub" style="margin:0;">${escapeHtml(session.email)}</p>
+      </div>
+      <button class="btn btn-ghost" id="sp_logout" style="width:auto;padding:8px 14px;font-size:12.5px;">Log out</button>
+    </div>
+    <span class="badge ${verifBadgeClass}" style="margin-bottom:16px;display:inline-block;">
+      ${session.verificationStatus === "Verified" ? "Verified Spotter" : session.verificationStatus === "Rejected" ? "Verification not approved" : "Verification pending"}
+    </span>
+    ${session.verificationStatus === "Pending" ? `<div class="info-box">Your ID document is in for review — AutoMarketer verifies new Spotters manually and will confirm you on WhatsApp. You can still submit clients in the meantime.</div>` : ""}
+    <button class="btn btn-primary" id="sp_newclient" style="margin-bottom:20px;">Submit a new client</button>
+    <div class="section-heading">Your submissions</div>
+    <div id="sp_leads"><div class="empty-state">Loading…</div></div>
+  </div>`;
+}
+function bindSpotterDashboard() {
+  document.getElementById("sp_logout").addEventListener("click", logoutSpotter);
+  document.getElementById("sp_newclient").addEventListener("click", () => {
+    startFlow("spotter");
+    // Prefill this spotter's own details so they never retype them.
+    const s = state.spotterAuth.session;
+    state.data.fullName = s.fullName; state.data.whatsapp = s.whatsapp; state.data.email = s.email;
+    state.data.existingSpotter = "Yes";
+    render();
+  });
+  loadSpotterOwnLeads().then(leads => {
+    const el = document.getElementById("sp_leads");
+    if (!el) return;
+    el.innerHTML = leads.map(l => `
+      <div class="lead-card" style="cursor:default;">
+        <div class="lead-top"><span class="lid tabnum">${l.id}</span><span class="${badgeClass(l.status)}">${l.status}</span></div>
+        <div class="lead-name">${escapeHtml(l.summary || "Client referral")}</div>
+        <div class="lead-meta">${fmtDate(l.createdAt)}</div>
+      </div>`).join("") || `<div class="empty-state">You haven't submitted any clients yet.</div>`;
+  });
 }
 
 /* ============================== SCREEN: DREAM RIDES ========================= */
@@ -1752,17 +2141,22 @@ function screenDreamRides() {
       ${renderProcessSteps(CONFIG.DREAM_RIDES_PROCESS)}
     </div>
 
+    <div class="review-section" style="max-width:760px;margin:0 auto 20px;">
+      <h4>Fees &amp; commission</h4>
+      <p style="font-size:14.5px;line-height:1.7;color:var(--text-secondary);margin:0;">${escapeHtml(CONFIG.AUCTION_ECONOMICS_TEXT)}</p>
+    </div>
+
     <div class="info-box" style="max-width:760px;margin:0 auto 24px;"><b>Important:</b> ${escapeHtml(CONFIG.DREAM_RIDES_DISCLAIMER)}</div>
 
     <div style="text-align:center;">
-      <button class="btn btn-primary" style="width:auto;padding:14px 34px;" id="dr_cta">Sell a vehicle</button>
+      <button class="btn btn-primary" style="width:auto;padding:14px 34px;" id="dr_cta">Sell my car through Dream Rides</button>
     </div>
   </div>
   ${renderFooter()}`;
 }
 function bindDreamRides() {
   bindNav();
-  document.getElementById("dr_cta").addEventListener("click", () => startFlow("sell"));
+  document.getElementById("dr_cta").addEventListener("click", () => startFlow("sell_auction"));
   bindFooterLinks();
 }
 
@@ -1883,7 +2277,7 @@ function renderFooter() {
       <a href="#" data-flink="privacy">Privacy Policy</a>
       <a href="#" data-flink="terms">Terms &amp; Conditions</a>
     </div>
-    <div class="fbottom">© ${new Date().getFullYear()} ${CONFIG.BUSINESS_NAME}. All rights reserved. AutoMarketer is a brokerage and intermediary — see our Brokerage Disclaimer.</div>
+    <div class="fbottom">© ${new Date().getFullYear()} ${CONFIG.BUSINESS_NAME}. All rights reserved. AutoMarketer is a brokerage and intermediary — see our Brokerage Disclaimer. · <a href="#" data-role="stafflink" style="color:inherit;text-decoration:underline;">Staff</a></div>
   </div>`;
 }
 function bindFooterLinks() {
@@ -1894,6 +2288,8 @@ function bindFooterLinks() {
     state.screen = t === "privacy" ? "privacy" : t === "disclaimer" ? "disclaimer" : "terms";
     render();
   }));
+  const staffLink = document.querySelector('[data-role="stafflink"]');
+  if (staffLink) staffLink.addEventListener("click", (e) => { e.preventDefault(); state.screen = "admin-login"; render(); });
 }
 function screenPrivacy() {
   return `${renderNav()}${topbar("Privacy Policy", true)}<div class="screen">
@@ -1951,7 +2347,7 @@ function countByType(leads, type) { return leads.filter(l => l.type === type).le
 
 function screenAdmin() {
   const leads = state.admin.leads;
-  const tabs = ["overview", "leads", "analytics"];
+  const tabs = ["overview", "leads", "spotters", "analytics"];
   let body = "";
   if (state.admin.tab === "overview") {
     body = `
@@ -1960,6 +2356,7 @@ function screenAdmin() {
         <div class="stat-card"><div class="num tabnum">${leads.filter(l => l.status === "New").length}</div><div class="lbl">New leads</div></div>
         <div class="stat-card"><div class="num tabnum">${countByType(leads, "buy")}</div><div class="lbl">Buyer leads</div></div>
         <div class="stat-card"><div class="num tabnum">${countByType(leads, "sell")}</div><div class="lbl">Seller leads</div></div>
+        <div class="stat-card"><div class="num tabnum">${countByType(leads, "sell_auction")}</div><div class="lbl">Dream Rides Auction leads</div></div>
         <div class="stat-card"><div class="num tabnum">${countByType(leads, "insurance")}</div><div class="lbl">Insurance leads</div></div>
         <div class="stat-card"><div class="num tabnum">${countByType(leads, "spotter")}</div><div class="lbl">Spotter leads</div></div>
         <div class="stat-card"><div class="num tabnum">${countByType(leads, "contract")}</div><div class="lbl">Contract leads</div></div>
@@ -1975,7 +2372,7 @@ function screenAdmin() {
         <input class="ctrl" id="ad_search" placeholder="Search name, phone, lead ID, vehicle…" value="${escapeHtml(state.admin.search)}">
       </div>
       <div class="filter-row">
-        ${["all","buy","sell","insurance","spotter","contract","other"].map(t => `<div class="filter-chip ${state.admin.typeFilter===t?"on":""}" data-typef="${t}">${t==="all"?"All types":leadTypeLabel(t)}</div>`).join("")}
+        ${["all","buy","sell","sell_auction","insurance","spotter","contract","other"].map(t => `<div class="filter-chip ${state.admin.typeFilter===t?"on":""}" data-typef="${t}">${t==="all"?"All types":leadTypeLabel(t)}</div>`).join("")}
       </div>
       <div class="filter-row">
         ${["all"].concat(LEAD_STATUSES).map(s => `<div class="filter-chip ${state.admin.statusFilter===s?"on":""}" data-statusf="${s}">${s==="all"?"All statuses":s}</div>`).join("")}
@@ -1984,6 +2381,11 @@ function screenAdmin() {
         ${[["newest","Newest"],["oldest","Oldest"]].map(([v,l]) => `<div class="filter-chip ${state.admin.sort===v?"on":""}" data-sortf="${v}">${l}</div>`).join("")}
       </div>
       ${filtered.map(leadCard).join("") || `<div class="empty-state">No leads match your filters.</div>`}
+    `;
+  } else if (state.admin.tab === "spotters") {
+    body = `
+      <div class="info-box">AutoMarketer verifies new Spotters manually — check the ID photo below, then mark the account Verified or Rejected.</div>
+      <div id="ad_spotters"><div class="empty-state">Loading…</div></div>
     `;
   } else if (state.admin.tab === "analytics") {
     body = `
@@ -2031,7 +2433,7 @@ function leadCard(l) {
 
 function bindAdmin() {
   document.getElementById("ad_logout").addEventListener("click", () => { state.admin.authed = false; state.screen = "landing"; render(); });
-  document.querySelectorAll("[data-tab]").forEach(el => el.addEventListener("click", () => { state.admin.tab = el.getAttribute("data-tab"); render(); if (state.admin.tab === "analytics") renderAnalytics(); }));
+  document.querySelectorAll("[data-tab]").forEach(el => el.addEventListener("click", () => { state.admin.tab = el.getAttribute("data-tab"); render(); if (state.admin.tab === "analytics") renderAnalytics(); if (state.admin.tab === "spotters") renderAdminSpotters(); }));
   document.querySelectorAll("[data-openlead]").forEach(el => el.addEventListener("click", () => { state.admin.openLeadId = el.getAttribute("data-openlead"); state.screen = "admin-lead"; render(); }));
   const search = document.getElementById("ad_search");
   if (search) search.addEventListener("input", () => { state.admin.search = search.value; render(); });
@@ -2039,6 +2441,34 @@ function bindAdmin() {
   document.querySelectorAll("[data-statusf]").forEach(el => el.addEventListener("click", () => { state.admin.statusFilter = el.getAttribute("data-statusf"); render(); }));
   document.querySelectorAll("[data-sortf]").forEach(el => el.addEventListener("click", () => { state.admin.sort = el.getAttribute("data-sortf"); render(); }));
   if (state.admin.tab === "analytics") renderAnalytics();
+  if (state.admin.tab === "spotters") renderAdminSpotters();
+}
+async function renderAdminSpotters() {
+  const keys = await stList("spotteracct:");
+  const accounts = await Promise.all(keys.map(k => stGet(k.key || k)));
+  const el = document.getElementById("ad_spotters");
+  if (!el) return;
+  const list = accounts.filter(Boolean).sort((a, b) => b.createdAt - a.createdAt);
+  el.innerHTML = list.map(a => `
+    <div class="lead-card" style="cursor:default;">
+      <div class="lead-top"><span class="lid" style="font-size:14px;">${escapeHtml(a.fullName)}</span><span class="${badgeClass(a.verificationStatus)}">${a.verificationStatus}</span></div>
+      <div class="lead-meta">${escapeHtml(a.email)} · ${escapeHtml(a.whatsapp)} · Joined ${fmtDate(a.createdAt)}</div>
+      <div class="photo-grid" style="margin-top:10px;max-width:220px;">
+        ${a.idPhoto ? `<div class="photo-thumb">${a.idPhoto.isImage ? `<img src="${a.idPhoto.dataUrl}">` : `ID file`}</div>` : `<div class="help">No ID photo</div>`}
+      </div>
+      <div class="btn-row" style="margin-top:12px;padding-top:0;">
+        <button class="btn btn-ghost" data-verify="${a.email}" data-status="Verified" style="padding:9px;font-size:12.5px;">Mark Verified</button>
+        <button class="btn btn-ghost" data-verify="${a.email}" data-status="Rejected" style="padding:9px;font-size:12.5px;">Mark Rejected</button>
+      </div>
+    </div>`).join("") || `<div class="empty-state">No Spotters have registered yet.</div>`;
+  document.querySelectorAll("[data-verify]").forEach(btn => btn.addEventListener("click", async () => {
+    const key = spotterKey(btn.getAttribute("data-verify"));
+    const acc = await stGet(key);
+    if (!acc) return;
+    acc.verificationStatus = btn.getAttribute("data-status");
+    await stSet(key, acc);
+    renderAdminSpotters();
+  }));
 }
 async function renderAnalytics() {
   const keys = await stList("evt:");
@@ -2127,6 +2557,8 @@ function render() {
     case "landing": html = screenLanding(); break;
     case "about": html = screenAbout(); break;
     case "spotters": html = screenSpotters(); break;
+    case "spotter-auth": html = screenSpotterAuth(); break;
+    case "spotter-dashboard": html = screenSpotterDashboard(); break;
     case "dreamrides": html = screenDreamRides(); break;
     case "coming-soon": html = screenComingSoon(); break;
     case "services": html = screenServices(); break;
@@ -2151,6 +2583,8 @@ function render() {
     case "landing": bindLanding(); break;
     case "about": bindAbout(); break;
     case "spotters": bindSpotters(); break;
+    case "spotter-auth": bindSpotterAuth(); break;
+    case "spotter-dashboard": bindSpotterDashboard(); break;
     case "dreamrides": bindDreamRides(); break;
     case "coming-soon": bindComingSoon(); break;
     case "services": bindServices(); break;
