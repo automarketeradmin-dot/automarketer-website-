@@ -348,6 +348,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   .footer .brand-logo{ background:#fff; padding:6px 10px; border-radius:8px; }
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
 <div id="app"></div>
@@ -370,10 +371,13 @@ const DREAM_RIDES_LOGO_DATA_URI = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ
 
 /* ---------------------------- CONFIGURATION ---------------------------- */
 const CONFIG = {
-  // Live Supabase Edge Function that saves leads to the database and
-  // triggers the WhatsApp notification. Deployed with --no-verify-jwt,
-  // so no API key is required from the browser — see chat notes.
-  SUPABASE_FUNCTION_URL: "https://sjmkybnkywercnujckit.supabase.co/functions/v1/submit-lead",
+  // Live Supabase project. The anon key below is meant to be public/visible
+  // in browser code — it can ONLY insert new leads and upload new photos
+  // (see the RLS policies run in the SQL Editor); it can never read, list,
+  // or modify existing data. WhatsApp notifications are handled manually
+  // for now (check the Supabase dashboard) — see chat notes.
+  SUPABASE_URL: "https://sjmkybnkywercnujckit.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqbWt5Ym5reXdlcmNudWpja2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4Mjc0MzgsImV4cCI6MjEwNTQwMzQzOH0.Ot-QGPC9KnjhsaePYEYD2jAG306l790sueoKRC4TwoE",
   BUSINESS_NAME: "AutoMarketer",
   AUTOMARKETER_WHATSAPP_NUMBER: "27754910677", // wa.me format, no plus/spaces
   AUTOMARKETER_WHATSAPP_DISPLAY: "075 491 0677",
@@ -499,7 +503,6 @@ const CONFIG = {
   FEATURES: { insurance: false, contract: false },
 
   LEAD_PREFIXES: { buy: "AM-BUY", sell: "AM-SELL", sell_auction: "AM-AUCT", insurance: "AM-INS", spotter: "AM-SPOT", contract: "AM-CON", other: "AM-OTHER" },
-  ADMIN_PASSWORD: "automarketer2026", // demo-only client-side gate — see disclosure
   MAX_PHOTOS: 8,
   MAX_PHOTO_DIM: 1000,
   PHOTO_QUALITY: 0.62,
@@ -538,102 +541,175 @@ const state = {
   spotterAuth: { session: null, view: "login", error: "" } // view: "login" | "register"
 };
 
-/* ------------------------------ STORAGE ---------------------------------
-   Leads are stored as SHARED data via window.storage so the admin dashboard
-   (opened by AutoMarketer staff) can see leads submitted by customers in
-   this demo/preview. In a real deployment this must be a proper backend
-   (Supabase/Postgres) with row-level security — see chat disclosure.
+/* --------------------------- SUPABASE CLIENT -----------------------------
+   One shared client for the whole app (auth, database queries, storage
+   uploads). supabase-js automatically persists the logged-in session in
+   the browser (localStorage) and restores it on reload — see restoreSession()
+   in boot() further down.
+--------------------------------------------------------------------------*/
+let _sb = null;
+function getSupabase() {
+  if (!_sb) _sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+  return _sb;
+}
+
+/* ------------------------------ DATA LAYER ------------------------------
+   Everything lives in Supabase now (leads table, private storage buckets,
+   Supabase Auth). The old browser-storage helpers (stGet/stSet/stList/
+   stDelete) are gone. Only harmless per-visitor preferences (cookie
+   choice) stay in this browser's own localStorage.
 ---------------------------------------------------------------------------*/
-async function stGet(key) {
-  try { const r = await window.storage.get(key, true); return r ? JSON.parse(r.value) : null; }
-  catch (e) { return null; }
-}
-async function stSet(key, val) {
-  try { await window.storage.set(key, JSON.stringify(val), true); return true; }
-  catch (e) { console.error("storage set failed", e); return false; }
-}
-async function stList(prefix) {
-  try { const r = await window.storage.list(prefix, true); return r ? r.keys : []; }
-  catch (e) { return []; }
-}
-async function stDelete(key) {
-  try { await window.storage.delete(key, true); } catch (e) {}
-}
 async function stGetPersonal(key) {
-  try { const r = await window.storage.get(key, false); return r ? JSON.parse(r.value) : null; }
+  try { const v = localStorage.getItem("am:" + key); return v ? JSON.parse(v) : null; }
   catch (e) { return null; }
 }
 async function stSetPersonal(key, val) {
-  try { await window.storage.set(key, JSON.stringify(val), false); return true; }
+  try { localStorage.setItem("am:" + key, JSON.stringify(val)); return true; }
   catch (e) { return false; }
+}
+function toNum(v, asInt) {
+  if (v === null || v === undefined || String(v).trim() === "") return null;
+  const n = Number(String(v).replace(/[^\d.\-]/g, ""));
+  return isFinite(n) ? (asInt ? Math.round(n) : n) : null;
+}
+// Turn a row from the leads table into the shape the admin + spotter
+// screens already use, so those screens didn't have to be redesigned.
+function leadRowToLegacy(r) {
+  const raw = r.raw_data || {};
+  return {
+    id: r.id, type: r.lead_type, createdAt: new Date(r.created_at).getTime(),
+    source: r.source || "Website", status: r.status, priority: r.priority,
+    notes: Array.isArray(r.notes) ? r.notes : [], isDuplicate: false, assignedTo: r.assigned_to || null,
+    customerName: r.name || raw.customerName || "-", whatsappDisplay: raw.whatsappDisplay || r.phone || "",
+    email: r.email || "", location: r.location || "", summary: raw.summary || "",
+    data: raw.data || {}, agreementAccepted: r.agreement_accepted, agreementVersion: r.agreement_version,
+    spotterAccountId: r.spotter_account_id
+  };
+}
+// Same WhatsApp number + same service within 24h => flag as possible duplicate.
+function markDuplicates(leads) {
+  const seen = [];
+  [...leads].sort((a, b) => a.createdAt - b.createdAt).forEach(l => {
+    const ph = normalizePhone(l.whatsappDisplay);
+    l.isDuplicate = !!ph && seen.some(x => x.type === l.type && x.ph === ph && (l.createdAt - x.createdAt) < 24 * 3600 * 1000);
+    seen.push({ type: l.type, ph, createdAt: l.createdAt });
+  });
+  return leads;
+}
+async function saveLeadUpdate(l) {
+  const { error } = await getSupabase().from("leads").update({ status: l.status, priority: l.priority, notes: l.notes || [] }).eq("id", l.id);
+  if (error) { console.error(error); showToast("Couldn't save that change: " + error.message); return false; }
+  return true;
+}
+// Photos live in a PRIVATE bucket, so the admin screen needs short-lived signed links to show them.
+async function hydratePhotoUrls(l) {
+  const sb = getSupabase();
+  for (const k of Object.keys(l.data || {})) {
+    const arr = l.data[k];
+    if (!Array.isArray(arr)) continue;
+    for (const p of arr) {
+      if (p && p.path && !p.dataUrl) {
+        const { data } = await sb.storage.from("lead-uploads").createSignedUrl(p.path, 3600);
+        if (data && data.signedUrl) p.dataUrl = data.signedUrl;
+      }
+    }
+  }
 }
 
 /* ============================ SPOTTER ACCOUNTS =============================
-   A real client-side account system (email+password, individual accounts)
-   so Spotters can log in and see their own submissions. Passwords are
-   hashed with the browser's real Web Crypto API (SHA-256) rather than
-   stored as plain text — but this is still NOT production-grade auth (no
-   salting, and anyone who can read this environment's shared storage can
-   read the hashes). Real deployment needs proper server-side auth
-   (e.g. Supabase Auth) — see chat notes.
+   Real accounts via Supabase Auth (email + password) — genuine
+   server-checked authentication, not a hand-rolled password hash. Each
+   Spotter's profile (name, WhatsApp, verification status, ID photo) lives
+   in the spotter_accounts table, keyed by that same Auth user id, and
+   Row Level Security ensures a Spotter can only ever read their own row
+   and their own leads (see auth_and_access_migration.sql).
 --------------------------------------------------------------------------*/
-async function hashPassword(pw) {
-  const enc = new TextEncoder().encode(pw);
-  const buf = await crypto.subtle.digest("SHA-256", enc);
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+function spotterProfileToSession(profile) {
+  return {
+    id: profile.id, fullName: profile.full_name, whatsapp: profile.whatsapp,
+    email: profile.email, verificationStatus: profile.verification_status
+  };
 }
-function spotterKey(email) { return `spotteracct:${String(email).trim().toLowerCase()}`; }
 
 async function registerSpotter(data) {
-  const key = spotterKey(data.email);
-  const existing = await stGet(key);
-  if (existing) return { ok: false, error: "An account with this email already exists — try logging in instead." };
-  const passwordHash = await hashPassword(data.password);
-  const account = {
-    id: uidShort() + uidShort(),
-    fullName: data.fullName, whatsapp: data.whatsapp, email: data.email.trim().toLowerCase(),
-    passwordHash, verificationStatus: "Pending",
-    idPhoto: (data.idPhoto && data.idPhoto[0]) || null,
-    createdAt: Date.now()
-  };
-  await stSet(key, account);
-  return { ok: true, account };
+  const email = data.email.trim().toLowerCase();
+  const sb = getSupabase();
+  const { data: signUpData, error: signUpErr } = await sb.auth.signUp({ email, password: data.password });
+  if (signUpErr) return { ok: false, error: signUpErr.message };
+  if (!signUpData.session) {
+    // Email confirmation is turned on in the Supabase dashboard — the
+    // account exists, but can't be used until the person confirms via
+    // the email Supabase just sent them.
+    return { ok: false, error: "Account created — please check your email to confirm it, then log in." };
+  }
+  const user = signUpData.user;
+
+  // Upload the ID photo (if provided) into the PRIVATE spotter-verification
+  // bucket, under a folder named after this user's own id — this is what
+  // the storage policy checks to make sure spotters can only ever write
+  // into their own folder.
+  let idPhotoPath = null;
+  const photo = data.idPhoto && data.idPhoto[0];
+  if (photo && photo.isImage && photo.dataUrl) {
+    const m = /^data:([^;]+);base64,(.*)$/.exec(photo.dataUrl);
+    if (m) {
+      const bytes = Uint8Array.from(atob(m[2]), c => c.charCodeAt(0));
+      const path = `${user.id}/${Date.now()}-${photo.name}`;
+      const { error: upErr } = await sb.storage.from("spotter-verification").upload(path, bytes, { contentType: m[1] });
+      if (!upErr) idPhotoPath = path;
+    }
+  }
+
+  const { data: profile, error: profileErr } = await sb.from("spotter_accounts").insert({
+    id: user.id, full_name: data.fullName, whatsapp: data.whatsapp, email,
+    id_photo_path: idPhotoPath, verification_status: "Pending"
+  }).select().single();
+  if (profileErr) return { ok: false, error: profileErr.message };
+  return { ok: true, account: profile };
 }
+
 async function loginSpotter(email, password) {
-  const account = await stGet(spotterKey(email));
-  if (!account) return { ok: false, error: "No account found with that email." };
-  const hash = await hashPassword(password);
-  if (hash !== account.passwordHash) return { ok: false, error: "Incorrect password." };
-  return { ok: true, account };
-}
-function spotterPublic(account) {
-  // Never keep the password hash in memory/session longer than needed.
-  const { passwordHash, ...pub } = account;
-  return pub;
+  const sb = getSupabase();
+  const { error: signInErr } = await sb.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+  if (signInErr) return { ok: false, error: "Incorrect email or password." };
+  const { data: profile, error: profileErr } = await sb.from("spotter_accounts").select("*").single();
+  if (profileErr || !profile) return { ok: false, error: "Logged in, but couldn't load your Spotter profile." };
+  return { ok: true, account: profile };
 }
 async function setSpotterSession(account) {
-  state.spotterAuth.session = spotterPublic(account);
-  await stSetPersonal("spotter_session", { id: account.id, email: account.email });
+  state.spotterAuth.session = spotterProfileToSession(account);
 }
 async function logoutSpotter() {
+  await getSupabase().auth.signOut();
   state.spotterAuth.session = null;
-  await stSetPersonal("spotter_session", null);
   state.screen = "spotters";
   render();
 }
+// Called once at boot to restore a Spotter (or admin) who's already
+// logged in from a previous visit — supabase-js keeps the session in the
+// browser's own localStorage, so this doesn't need any storage of our own.
+async function restoreSession() {
+  const sb = getSupabase();
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return;
+  const { data: adminRow } = await sb.from("admin_users").select("id").single();
+  if (adminRow) { state.admin.authed = true; return; }
+  const { data: profile } = await sb.from("spotter_accounts").select("*").single();
+  if (profile) state.spotterAuth.session = spotterProfileToSession(profile);
+}
 
 async function nextLeadId(typeKey) {
-  const counterKey = `counter:${typeKey}`;
-  const cur = await stGet(counterKey);
-  const n = (cur && cur.value) ? cur.value + 1 : 1;
-  await stSet(counterKey, { value: n });
-  return `${CONFIG.LEAD_PREFIXES[typeKey]}-${String(n).padStart(4, "0")}`;
+  try {
+    const { data, error } = await getSupabase().rpc("next_lead_id", { p_type: typeKey });
+    if (!error && data) return data;
+  } catch (e) {}
+  // Fallback so a customer is never blocked just because the counter couldn't be reached.
+  return `${CONFIG.LEAD_PREFIXES[typeKey]}-${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).slice(2, 4).toUpperCase()}`;
 }
 
 async function logEvent(type, extra) {
   if (state.cookie.decided && !state.cookie.analytics) return; // visitor rejected non-essential cookies
-  const key = `evt:${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-  await stSet(key, { type, extra: extra || null, ts: Date.now() });
+  try { await getSupabase().from("events").insert({ type, extra: extra || null }); } catch (e) {}
 }
 
 /* ------------------------------- HELPERS --------------------------------- */
@@ -1540,13 +1616,7 @@ async function submitLead() {
     const flow = FLOWS[key];
     const createdAt = Date.now();
 
-    // duplicate detection: same type + same phone within last 24h
-    let isDuplicate = false;
-    try {
-      const keys = await stList("lead:");
-      const recent = await Promise.all(keys.slice(-60).map(k => stGet(k.key || k)));
-      isDuplicate = recent.some(l => l && l.type === key && normalizePhone(l.whatsappDisplay) === phone && (Date.now() - l.createdAt) < 24 * 3600 * 1000);
-    } catch (e) {}
+    const isDuplicate = false; // duplicate flags are computed on the admin screen now
 
     const record = buildNormalizedRecord(key, state.data, { id, createdAt, name, phone, location });
     const lead = {
@@ -1558,49 +1628,47 @@ async function submitLead() {
       spotterAccountId: (key === "spotter" && state.spotterAuth.session) ? state.spotterAuth.session.id : null,
       record // CRM/Supabase-ready normalized shape — see chat notes
     };
-    await stSet(`lead:${id}`, lead);
-    await logEvent("lead_submitted", { type: key, id });
-
-    // Send the lead to the live backend (Supabase Edge Function): saves it
-    // to the database and triggers the WhatsApp notification. This is
-    // deliberately non-blocking for the customer's flow — if it fails (bad
-    // connection, backend hiccup), the confirmation screen still shows and
-    // the local record above is unaffected; the lead just won't have
-    // reached Supabase yet.
-    try {
-      const photosPayload = [];
-      Object.keys(state.data).forEach(k => {
-        const v = state.data[k];
-        if (Array.isArray(v) && v.length && v[0] && typeof v[0] === "object" && "isImage" in v[0]) {
-          v.forEach(p => {
-            if (p.isImage && p.dataUrl) {
-              const m = /^data:([^;]+);base64,(.*)$/.exec(p.dataUrl);
-              if (m) photosPayload.push({ name: p.name, mimeType: m[1], base64: m[2] });
-            }
-          });
+    // Save to Supabase: photos go into the PRIVATE lead-uploads bucket, then the
+    // lead row is inserted. If either step fails we throw, so the customer sees
+    // the "try again" message instead of a false success.
+    const sb = getSupabase();
+    const uploadedPaths = [];
+    const dataForDb = {};
+    let photoIdx = 0;
+    for (const k of Object.keys(state.data)) {
+      const v = state.data[k];
+      if (Array.isArray(v) && v.length && v[0] && typeof v[0] === "object" && "isImage" in v[0]) {
+        dataForDb[k] = [];
+        for (const p of v) {
+          const entry = { name: p.name, isImage: !!p.isImage };
+          const m = (p.isImage && p.dataUrl) ? /^data:([^;]+);base64,(.*)$/.exec(p.dataUrl) : null;
+          if (m) {
+            const bytes = Uint8Array.from(atob(m[2]), c => c.charCodeAt(0));
+            const path = `${id}/${photoIdx++}-${p.name}`;
+            const { error: upErr } = await sb.storage.from("lead-uploads").upload(path, bytes, { contentType: m[1] });
+            if (upErr) throw new Error("Photo upload failed: " + upErr.message);
+            entry.path = path; uploadedPaths.push(path);
+          }
+          dataForDb[k].push(entry);
         }
-      });
-      const backendPayload = {
-        id: record.id, lead_type: record.lead_type,
-        name: record.name, phone: record.phone, email: record.email, location: record.location,
-        client_name: record.client_name, client_phone: record.client_phone,
-        spotter_account_id: lead.spotterAccountId || null,
-        vehicle_make: record.vehicle_make, vehicle_model: record.vehicle_model, vehicle_year: record.vehicle_year,
-        mileage: record.mileage, transmission: record.transmission, vehicle_condition: record.vehicle_condition,
-        budget: record.budget, asking_price: record.asking_price, description: record.description,
-        agreement_accepted: record.agreement_accepted, agreement_version: record.agreement_version,
-        consent_status: record.consent_status, source: lead.source,
-        photos: photosPayload,
-        whatsapp_message: buildWhatsAppText(lead)
-      };
-      await fetch(CONFIG.SUPABASE_FUNCTION_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(backendPayload)
-      });
-    } catch (backendErr) {
-      console.error("Backend submission failed (lead still saved locally):", backendErr);
+      } else dataForDb[k] = v;
     }
+    const { error: dbErr } = await sb.from("leads").insert({
+      id, lead_type: record.lead_type,
+      name: record.name ?? null, phone: record.phone ?? null, email: record.email ?? null, location: record.location ?? null,
+      client_name: record.client_name ?? null, client_phone: record.client_phone ?? null,
+      spotter_account_id: lead.spotterAccountId || null,
+      vehicle_make: record.vehicle_make ?? null, vehicle_model: record.vehicle_model ?? null,
+      vehicle_year: toNum(record.vehicle_year, true), mileage: toNum(record.mileage, true),
+      transmission: record.transmission ?? null, vehicle_condition: record.vehicle_condition ?? null,
+      budget: toNum(record.budget), asking_price: toNum(record.asking_price),
+      description: record.description ?? null, uploaded_files: uploadedPaths,
+      agreement_accepted: !!record.agreement_accepted, agreement_version: record.agreement_version ?? null,
+      consent_status: record.consent_status, source: lead.source,
+      raw_data: { data: dataForDb, summary: lead.summary, customerName: lead.customerName, whatsappDisplay: phoneRaw }
+    });
+    if (dbErr) throw new Error("Could not save lead: " + dbErr.message);
+    await logEvent("lead_submitted", { type: key, id });
 
     if (window.Notification) {
       if (Notification.permission === "granted") new Notification("New AutoMarketer lead", { body: `${id} — ${name || "New lead"}` });
@@ -2065,10 +2133,10 @@ function bindSpotterAuth() {
 
 /* ============================== SCREEN: SPOTTER DASHBOARD =================== */
 async function loadSpotterOwnLeads() {
-  const keys = await stList("lead:");
-  const items = await Promise.all(keys.map(k => stGet(k.key || k)));
-  const myId = state.spotterAuth.session.id;
-  return items.filter(l => l && l.type === "spotter" && l.spotterAccountId === myId).sort((a, b) => b.createdAt - a.createdAt);
+  // Row Level Security guarantees a Spotter only ever gets their OWN leads back.
+  const { data, error } = await getSupabase().from("leads").select("*").eq("lead_type", "spotter").order("created_at", { ascending: false });
+  if (error) { console.error(error); return []; }
+  return data.map(leadRowToLegacy);
 }
 function screenSpotterDashboard() {
   const session = state.spotterAuth.session;
@@ -2317,28 +2385,40 @@ function screenAdminLogin() {
   <div class="admin-login">
     ${renderLogo("lg")}
     <h2 class="hl">Staff login</h2>
-    <p class="sub">Not accessible to customers. Demo-only password gate — see notes.</p>
-    <div class="field"><label>Password</label><input class="ctrl" type="password" id="ad_pass" placeholder="••••••••"></div>
+    <p class="sub">Not accessible to customers. Staff accounts only.</p>
+    <div class="field"><label>Email</label><input class="ctrl" type="email" id="ad_email" placeholder="you@automarketer.co.za" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input class="ctrl" type="password" id="ad_pass" placeholder="••••••••" autocomplete="current-password"></div>
     <div class="err" id="ad_err" style="display:none;text-align:center;"></div>
     <button class="btn btn-primary" id="ad_login">Log in</button>
-    <div class="info-box">This is a client-side demo gate (password: <b>automarketer2026</b>). A production build needs real server-side authentication (e.g. Supabase Auth) with role-based permissions — see chat notes for the full plan.</div>
+
   </div>`;
 }
 function bindAdminLogin() {
   bindTopbarBack(() => { state.screen = "landing"; render(); });
-  const go = () => {
-    const v = document.getElementById("ad_pass").value;
-    if (v === CONFIG.ADMIN_PASSWORD) { state.admin.authed = true; state.screen = "admin"; state.admin.tab = "overview"; loadAdminLeads().then(render); }
-    else { const e = document.getElementById("ad_err"); e.style.display = "block"; e.textContent = "Incorrect password."; }
+  const go = async () => {
+    const email = document.getElementById("ad_email").value.trim().toLowerCase();
+    const pass = document.getElementById("ad_pass").value;
+    const err = document.getElementById("ad_err"), btn = document.getElementById("ad_login");
+    const fail = (m) => { err.style.display = "block"; err.textContent = m; btn.disabled = false; btn.textContent = "Log in"; };
+    if (!email || !pass) return fail("Enter your staff email and password.");
+    btn.disabled = true; btn.textContent = "Logging in…";
+    const sb = getSupabase();
+    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (error) return fail("Incorrect email or password.");
+    // Logged in is not the same as staff: only accounts listed in admin_users get in.
+    const { data: adminRow } = await sb.from("admin_users").select("id").maybeSingle();
+    if (!adminRow) { await sb.auth.signOut(); return fail("This account doesn't have staff access."); }
+    state.admin.authed = true; state.screen = "admin"; state.admin.tab = "overview";
+    await loadAdminLeads(); render();
   };
   document.getElementById("ad_login").addEventListener("click", go);
   document.getElementById("ad_pass").addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
 }
 
 async function loadAdminLeads() {
-  const keys = await stList("lead:");
-  const items = await Promise.all(keys.map(k => stGet(k.key || k)));
-  state.admin.leads = items.filter(Boolean).sort((a, b) => b.createdAt - a.createdAt);
+  const { data, error } = await getSupabase().from("leads").select("*").order("created_at", { ascending: false }).limit(1000);
+  if (error) { console.error("loadAdminLeads", error); state.admin.leads = []; showToast("Couldn't load leads: " + error.message); return; }
+  state.admin.leads = markDuplicates(data.map(leadRowToLegacy)).sort((a, b) => b.createdAt - a.createdAt);
 }
 
 /* ============================== ADMIN: DASHBOARD ============================ */
@@ -2432,9 +2512,9 @@ function leadCard(l) {
 }
 
 function bindAdmin() {
-  document.getElementById("ad_logout").addEventListener("click", () => { state.admin.authed = false; state.screen = "landing"; render(); });
+  document.getElementById("ad_logout").addEventListener("click", async () => { await getSupabase().auth.signOut(); state.admin.authed = false; state.admin.leads = []; state.screen = "landing"; render(); });
   document.querySelectorAll("[data-tab]").forEach(el => el.addEventListener("click", () => { state.admin.tab = el.getAttribute("data-tab"); render(); if (state.admin.tab === "analytics") renderAnalytics(); if (state.admin.tab === "spotters") renderAdminSpotters(); }));
-  document.querySelectorAll("[data-openlead]").forEach(el => el.addEventListener("click", () => { state.admin.openLeadId = el.getAttribute("data-openlead"); state.screen = "admin-lead"; render(); }));
+  document.querySelectorAll("[data-openlead]").forEach(el => el.addEventListener("click", async () => { state.admin.openLeadId = el.getAttribute("data-openlead"); const ol = state.admin.leads.find(x => x.id === state.admin.openLeadId); if (ol) await hydratePhotoUrls(ol); state.screen = "admin-lead"; render(); }));
   const search = document.getElementById("ad_search");
   if (search) search.addEventListener("input", () => { state.admin.search = search.value; render(); });
   document.querySelectorAll("[data-typef]").forEach(el => el.addEventListener("click", () => { state.admin.typeFilter = el.getAttribute("data-typef"); render(); }));
@@ -2444,39 +2524,44 @@ function bindAdmin() {
   if (state.admin.tab === "spotters") renderAdminSpotters();
 }
 async function renderAdminSpotters() {
-  const keys = await stList("spotteracct:");
-  const accounts = await Promise.all(keys.map(k => stGet(k.key || k)));
+  const sb = getSupabase();
   const el = document.getElementById("ad_spotters");
   if (!el) return;
-  const list = accounts.filter(Boolean).sort((a, b) => b.createdAt - a.createdAt);
+  const { data, error } = await sb.from("spotter_accounts").select("*").order("created_at", { ascending: false });
+  if (error) { el.innerHTML = `<div class="empty-state">Couldn't load Spotters: ${escapeHtml(error.message)}</div>`; return; }
+  const list = await Promise.all(data.map(async a => {
+    let idUrl = null;
+    if (a.id_photo_path) {
+      const { data: sg } = await sb.storage.from("spotter-verification").createSignedUrl(a.id_photo_path, 3600);
+      idUrl = sg ? sg.signedUrl : null;
+    }
+    return { ...a, idUrl };
+  }));
   el.innerHTML = list.map(a => `
     <div class="lead-card" style="cursor:default;">
-      <div class="lead-top"><span class="lid" style="font-size:14px;">${escapeHtml(a.fullName)}</span><span class="${badgeClass(a.verificationStatus)}">${a.verificationStatus}</span></div>
-      <div class="lead-meta">${escapeHtml(a.email)} · ${escapeHtml(a.whatsapp)} · Joined ${fmtDate(a.createdAt)}</div>
+      <div class="lead-top"><span class="lid" style="font-size:14px;">${escapeHtml(a.full_name)}</span><span class="${badgeClass(a.verification_status)}">${a.verification_status}</span></div>
+      <div class="lead-meta">${escapeHtml(a.email)} · ${escapeHtml(a.whatsapp)} · Joined ${fmtDate(new Date(a.created_at).getTime())}</div>
       <div class="photo-grid" style="margin-top:10px;max-width:220px;">
-        ${a.idPhoto ? `<div class="photo-thumb">${a.idPhoto.isImage ? `<img src="${a.idPhoto.dataUrl}">` : `ID file`}</div>` : `<div class="help">No ID photo</div>`}
+        ${a.idUrl ? (/\.(jpe?g|png|webp|gif)$/i.test(a.id_photo_path) ? `<a class="photo-thumb" href="${a.idUrl}" target="_blank" rel="noopener"><img src="${a.idUrl}"></a>` : `<a class="help" href="${a.idUrl}" target="_blank" rel="noopener">Open ID file</a>`) : `<div class="help">No ID photo</div>`}
       </div>
       <div class="btn-row" style="margin-top:12px;padding-top:0;">
-        <button class="btn btn-ghost" data-verify="${a.email}" data-status="Verified" style="padding:9px;font-size:12.5px;">Mark Verified</button>
-        <button class="btn btn-ghost" data-verify="${a.email}" data-status="Rejected" style="padding:9px;font-size:12.5px;">Mark Rejected</button>
+        <button class="btn btn-ghost" data-verify="${a.id}" data-status="Verified" style="padding:9px;font-size:12.5px;">Mark Verified</button>
+        <button class="btn btn-ghost" data-verify="${a.id}" data-status="Rejected" style="padding:9px;font-size:12.5px;">Mark Rejected</button>
       </div>
     </div>`).join("") || `<div class="empty-state">No Spotters have registered yet.</div>`;
   document.querySelectorAll("[data-verify]").forEach(btn => btn.addEventListener("click", async () => {
-    const key = spotterKey(btn.getAttribute("data-verify"));
-    const acc = await stGet(key);
-    if (!acc) return;
-    acc.verificationStatus = btn.getAttribute("data-status");
-    await stSet(key, acc);
+    const { error: upErr } = await sb.from("spotter_accounts").update({ verification_status: btn.getAttribute("data-status") }).eq("id", btn.getAttribute("data-verify"));
+    if (upErr) { showToast("Couldn't update: " + upErr.message); return; }
     renderAdminSpotters();
   }));
 }
 async function renderAnalytics() {
-  const keys = await stList("evt:");
-  const events = await Promise.all(keys.map(k => stGet(k.key || k)));
-  const counts = {};
-  events.filter(Boolean).forEach(e => { counts[e.type] = (counts[e.type] || 0) + 1; });
   const el = document.getElementById("ad_analytics");
   if (!el) return;
+  const { data, error } = await getSupabase().rpc("admin_event_counts");
+  if (error) { el.innerHTML = `<div class="empty-state">Couldn't load analytics: ${escapeHtml(error.message)}</div>`; return; }
+  const counts = {};
+  (data || []).forEach(r => { counts[r.type] = Number(r.n); });
   const order = ["name_captured","form_start","lead_submitted"];
   el.innerHTML = `<div class="stat-grid">${order.map(k => `<div class="stat-card"><div class="num tabnum">${counts[k]||0}</div><div class="lbl">${k.replace(/_/g," ")}</div></div>`).join("")}</div>`;
 }
@@ -2537,14 +2622,14 @@ function bindAdminLead() {
   bindTopbarBack(() => { state.screen = "admin"; state.admin.tab = "leads"; render(); });
   const l = state.admin.leads.find(x => x.id === state.admin.openLeadId);
   if (!l) return;
-  document.getElementById("al_status").addEventListener("change", async (e) => { l.status = e.target.value; await stSet(`lead:${l.id}`, l); render(); });
-  document.querySelectorAll("[data-priority]").forEach(btn => btn.addEventListener("click", async () => { l.priority = btn.getAttribute("data-priority"); await stSet(`lead:${l.id}`, l); render(); }));
+  document.getElementById("al_status").addEventListener("change", async (e) => { l.status = e.target.value; await saveLeadUpdate(l); render(); });
+  document.querySelectorAll("[data-priority]").forEach(btn => btn.addEventListener("click", async () => { l.priority = btn.getAttribute("data-priority"); await saveLeadUpdate(l); render(); }));
   document.getElementById("al_addnote").addEventListener("click", async () => {
     const ta = document.getElementById("al_newnote");
     const text = ta.value.trim();
     if (!text) return;
     l.notes = l.notes || []; l.notes.push({ text, ts: Date.now() });
-    await stSet(`lead:${l.id}`, l);
+    await saveLeadUpdate(l);
     render();
   });
 }
@@ -2641,6 +2726,7 @@ function showBootSplash() {
     const saved = await stGetPersonal("cookie_consent");
     if (saved) { state.cookie.decided = true; state.cookie.analytics = !!saved.analytics; }
   } catch (e) {}
+  try { await restoreSession(); if (state.admin.authed) await loadAdminLeads(); } catch (e) { console.error("restoreSession", e); }
   logEvent("visit", { source: state.source });
   setTimeout(render, 500);
 })();
