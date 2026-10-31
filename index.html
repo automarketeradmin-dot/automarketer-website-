@@ -859,9 +859,9 @@ async function registerSpotter(data) {
 
 async function loginSpotter(email, password) {
   const sb = getSupabase();
-  const { error: signInErr } = await sb.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+  const { data: signInData, error: signInErr } = await sb.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
   if (signInErr) return { ok: false, error: "Incorrect email or password." };
-  const { data: profile, error: profileErr } = await sb.from("spotter_accounts").select("*").single();
+  const { data: profile, error: profileErr } = await sb.from("spotter_accounts").select("*").eq("id", signInData.user.id).maybeSingle();
   if (profileErr || !profile) { await sb.auth.signOut(); return { ok: false, error: "That login isn't a Spotter account." }; }
   return { ok: true, account: profile };
 }
@@ -885,7 +885,7 @@ async function restoreSession() {
   if (!session) return;
   const { data: adminRow } = await sb.from("admin_users").select("id").single();
   if (adminRow) { state.admin.authed = true; return; }
-  const { data: profile } = await sb.from("spotter_accounts").select("*").single();
+  const { data: profile } = await sb.from("spotter_accounts").select("*").eq("id", session.user.id).maybeSingle();
   if (profile) { state.spotterAuth.session = spotterProfileToSession(profile); return; }
   if (!DN.DEALERS_LIVE) return;
   const { data: dealerRow } = await sb.from("dealers").select("*").maybeSingle();
@@ -4222,9 +4222,20 @@ async function dnSubmitCar() {
     showToast("Car submitted — AutoMarketer will review it.");
   } catch (e) {
     console.error(e);
-    A.submitting = false; A.progress = ""; A.error = e.message || "Something went wrong. Please try again."; render(); window.scrollTo(0, 0);
+    let msg = e.message || "Something went wrong. Please try again.";
+    if (/row-level security|policy|permission/i.test(msg)) msg += await dnWhyDenied(uid, sp);
+    A.submitting = false; A.progress = ""; A.error = msg; render(); window.scrollTo(0, 0);
     showToast("Your car was NOT sent. See the red message at the top.");
   }
+}
+// When the server refuses something, add a plain-language note about WHO it thinks you are (helps find the cause fast).
+async function dnWhyDenied(uid, sp) {
+  try {
+    const sb = getSupabase(), { data } = await sb.auth.getUser(), u = data && data.user;
+    if (!u) return " — Technical note: you are not logged in any more. Log in again.";
+    const act = await sb.rpc(sp ? "is_active_spotter" : "is_dealer");
+    return ` — Technical note: logged in as ${u.email}; matches this ${sp ? "Spotter" : "dealer"} account: ${u.id === uid ? "yes" : "NO — log out and log in again"}; active ${sp ? "Spotter" : "dealer"}: ${act && act.data === true ? "yes" : "NO — this login is not an active " + (sp ? "Spotter" : "dealer") + " account"}.`;
+  } catch (_) { return ""; }
 }
 function dnShowProgress(msg) { const m = document.getElementById("dn_busy_msg"); if (m) m.textContent = msg; }
 function bindDealerAdd() {
