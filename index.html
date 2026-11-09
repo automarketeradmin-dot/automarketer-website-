@@ -709,18 +709,25 @@ body.wide-body #app.app-wide{max-width:none;border-radius:0;box-shadow:none;min-
 .nav-links > a.nav-portal{color:var(--primary-teal-dark);font-weight:700;background:var(--primary-teal-tint);border-radius:999px;padding:7px 14px;}
 .nav-links > a.nav-cta{background:var(--primary-teal);color:#fff !important;border-radius:999px;font-weight:600;}
 .nav-links > a.nav-cta:hover{background:var(--primary-teal-dark);color:#fff !important;}
-/* phone menu: groups are always open, with a small label */
-.nav-links .nav-dropdown-btn{pointer-events:none;border-bottom:none;padding:16px 2px 4px;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-tertiary);font-weight:600;}
-.nav-links .nav-dropdown-btn svg{display:none;}
-.nav-links .nav-dropdown-menu{display:flex;padding-left:0;}
-.nav-links .nav-dropdown-menu a{padding:10px 2px;border-bottom:1px solid var(--gray-light) !important;}
+/* phone menu: Cars link, then collapsible groups (tap to open), same as the website */
+.nav-links > a.nav-cars{display:flex;flex-direction:column;gap:2px;}
+.nav-links > a.nav-cars .nav-sub{font-size:12.5px;font-weight:400;color:var(--text-secondary);}
+.nav-links .nav-dropdown-btn{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;text-align:left;font-family:inherit;cursor:pointer;pointer-events:auto;border:none;border-bottom:1px solid var(--gray-light);padding:13px 2px;font-size:14.5px;letter-spacing:0;text-transform:none;color:var(--text-primary);font-weight:600;}
+.nav-links .nav-dropdown-btn svg{display:inline-block;width:12px;height:12px;opacity:.6;}
+.nav-links .nav-dropdown-menu{display:none;flex-direction:column;padding:4px 0 6px 12px;margin:0 0 4px;border-left:2px solid var(--primary-teal-tint);}
+.nav-links .nav-dropdown.open .nav-dropdown-menu{display:flex;}
+.nav-links .nav-dropdown-menu a{padding:10px 8px;border-bottom:1px solid var(--gray-light) !important;}
+.nav-links .nav-dropdown-menu a:last-child{border-bottom:none !important;}
 @media (min-width:860px){
   .nav-row.wide-wrap{max-width:1180px;}
   .nav-links{gap:26px;}
   .nav-links > a.nav-home{display:none;}
-  .nav-links .nav-dropdown-btn{pointer-events:auto;border-bottom:none;padding:6px 2px;font-size:14px;letter-spacing:0;text-transform:none;color:#27363D;font-weight:500;}
+  .nav-links > a.nav-cars{display:inline;}
+  .nav-links > a.nav-cars .nav-sub{display:none;}
+  .nav-links .nav-dropdown-btn{display:inline-flex;justify-content:flex-start;width:auto;pointer-events:auto;border-bottom:none;padding:6px 2px;font-size:14px;letter-spacing:0;text-transform:none;color:#27363D;font-weight:500;}
+  .nav-links .nav-dropdown-btn svg{width:10px;height:10px;}
   .nav-links .nav-dropdown-btn svg{display:inline-block;}
-  .nav-links .nav-dropdown-menu{display:none;padding:8px;min-width:280px;border-radius:14px;border:1px solid var(--line);box-shadow:0 18px 40px rgba(11,45,53,.16);margin-top:12px;}
+  .nav-links .nav-dropdown-menu{display:none;border-left:none;margin:12px 0 0;padding:8px;min-width:280px;border-radius:14px;border:1px solid var(--line);box-shadow:0 18px 40px rgba(11,45,53,.16);margin-top:12px;}
   .nav-links .nav-dropdown.open .nav-dropdown-menu{display:flex;}
   .nav-links .nav-dropdown-menu a{padding:11px 12px;border-radius:10px;border-bottom:none !important;}
   .nav-links .nav-dropdown-menu a:hover{background:var(--soft);}
@@ -850,6 +857,23 @@ body.wide-body #app.app-wide{max-width:none;border-radius:0;box-shadow:none;min-
 .lp-quick:last-child{border-bottom:none;}
 .lp-quick i{font-style:normal;color:var(--primary-teal);transition:transform .18s;}
 .lp-quick:hover{color:var(--primary-teal);}.lp-quick:hover i{transform:translateX(4px);}
+
+/* ---- drag & drop photos ---- */
+.dn-drop{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;cursor:pointer;margin:0 0 14px;padding:22px 16px;border:2px dashed var(--primary-teal-light);border-radius:14px;background:var(--primary-teal-tint);color:var(--primary-teal-dark);transition:background .15s,border-color .15s,transform .15s;}
+.dn-drop b{font-size:16px;}
+.dn-drop span{font-size:13px;color:var(--text-secondary);}
+.dn-drop svg{width:30px;height:30px;stroke:var(--primary-teal);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-bottom:4px;}
+.dn-drop:hover{background:#DCEDF0;}
+.dn-dragging .dn-drop{border-color:var(--primary-teal);}
+.dn-drop.drop-over{background:var(--primary-teal);color:#fff;border-style:solid;transform:scale(1.01);}
+.dn-drop.drop-over span{color:rgba(255,255,255,.85);}.dn-drop.drop-over svg{stroke:#fff;}
+.dn-dragging .shot{border-color:var(--primary-teal-light);}
+.shot.drop-over{border-style:solid;border-color:var(--primary-teal);background:var(--primary-teal-tint);box-shadow:0 0 0 3px rgba(0,104,122,.18);}
+
+/* descriptions keep the paragraphs the seller typed */
+.rt{margin:0 0 10px;}
+.rt:last-child{margin-bottom:0;}
+.rt-box{font-size:14px;line-height:1.65;color:var(--text-secondary);margin:12px 0;}
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -1262,6 +1286,11 @@ function isValidSAPhone(v) {
 }
 function isValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 
+function fmtText(s) {
+  const t = String(s == null ? "" : s).replace(/\r\n?/g, "\n").trim();
+  if (!t) return "";
+  return t.split(/\n{2,}/).map(p => `<p class="rt">${escapeHtml(p).replace(/\n/g, "<br>")}</p>`).join("");
+}
 function escapeHtml(s) {
   if (s === undefined || s === null) return "";
   return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -3927,8 +3956,8 @@ function screenCar() {
           <div class="car-price-lg tabnum">${money(c.price)}</div>
           ${dnMarkers(c) ? `<p class="car-badges-inline">${dnMarkers(c)}</p>` : ""}
           <div class="spec-grid">${specs.map(([k, v]) => `<div class="detail-row"><span class="k">${k}</span><span class="v">${escapeHtml(v)}</span></div>`).join("")}</div>
-          ${c.description ? `<p style="font-size:14px;line-height:1.65;color:var(--text-secondary);margin:12px 0;">${escapeHtml(c.description)}</p>` : ""}
-          ${c.features ? `<p style="font-size:13px;line-height:1.6;color:var(--text-secondary);margin:0 0 12px;"><b style="color:var(--text-primary);">Features:</b> ${escapeHtml(c.features)}</p>` : ""}
+          ${c.description ? `<div class="rt-box">${fmtText(c.description)}</div>` : ""}
+          ${c.features ? `<p style="font-size:13px;line-height:1.6;color:var(--text-secondary);margin:0 0 12px;"><b style="color:var(--text-primary);">Features:</b> ${escapeHtml(c.features).replace(/\n/g, "<br>")}</p>` : ""}
           ${spotterPanel}
           ${dnIsOwn(c) || hideGeneric ? "" : dnInquiryPanel(c)}
           <a class="btn btn-ghost" id="car_share" href="${"https://wa.me/?text=" + encodeURIComponent(`${dnCarTitle(c)} — ${money(c.price)} — ${dnWhere(c)}\nhttps://${CONFIG.DOMAIN}/?car=${c.ref}`)}" target="_blank" rel="noopener">Share on WhatsApp</a>
@@ -4638,6 +4667,7 @@ function screenDealerAdd() {
       <p class="wall-note">Tip: park on a clear, level spot in good light. The background tool runs on your phone, so the first photo takes a little longer while it loads.</p>
       <div class="bgbanner" id="dn_bgbanner">${dnBgBannerInner()}</div>
       <div id="dn_retryall" style="margin:0 0 10px;">${dnRetryAllHtml()}</div>
+      <label class="dn-drop" id="dn_drop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg><b>Drag and drop your photos here</b><span>or tap to choose several at once. They fill the empty photo spots in order. You can also drop a single photo straight onto a spot below.</span><input type="file" accept="image/*" multiple id="dn_dropinput" hidden></label>
       <div id="dn_shots">${dnAllSlots().map(dnShotTile).join("")}</div>`;
   } else if (key === "verify") {
     body = `<h2 class="step-title">VIN &amp; licence disc</h2>
@@ -5293,7 +5323,7 @@ function screenDealerProfile() {
       </div>
       <div class="dp-cols">
         <div class="dp-card"><h3>About</h3>
-          <p>${d.about ? escapeHtml(d.about).replace(/\n/g, "<br>") : "This dealership hasn't added a description yet."}</p>
+          ${d.about ? fmtText(d.about) : "<p>This dealership hasn't added a description yet.</p>"}
           ${d.brands ? `<h4>Brands &amp; types of cars</h4><p>${escapeHtml(d.brands)}</p>` : ""}
         </div>
         <div class="dp-card"><h3>Visit &amp; find us online</h3>
@@ -5483,7 +5513,7 @@ function dnSellerCard(c) {
     <div class="lead-name">${escapeHtml(dnCarTitle(c))}</div>
     <div class="lead-meta"><span>Seller: <b>${escapeHtml(sc.full_name || "—")}</b> · <b class="tabnum">${escapeHtml(sc.phone || "—")}</b></span><span>${escapeHtml(dnWhere(c))}</span><span>Photos ${c.shot_count}/10</span></div>
     <div class="kv"><span>${[dnKm(c.mileage), c.transmission, c.fuel_type, c.colour].filter(Boolean).map(escapeHtml).join(" · ")}</span></div>
-    ${c.description ? `<div class="note-item" style="margin-top:8px;">${escapeHtml(c.description)}</div>` : ""}
+    ${c.description ? `<div class="note-item" style="margin-top:8px;">${fmtText(c.description)}</div>` : ""}
     ${o.owner_note ? `<div class="help" style="margin-top:6px;">Seller's note: ${escapeHtml(o.owner_note)}</div>` : ""}
     <div class="secret"><b>Check before approving.</b> VIN: <b class="tabnum">${doc ? escapeHtml(doc.vin) : "—"}</b>
       ${doc ? `<button class="btn btn-ghost" data-viewdisc="${c.id}" style="padding:6px 10px;font-size:12px;width:auto;margin-left:6px;">View licence disc</button>` : `<span class="help">(no disc on file)</span>`}
@@ -5521,7 +5551,7 @@ function dnPrivateCard(c) {
     <div class="lead-name">${escapeHtml(dnCarTitle(c))}</div>
     <div class="lead-meta"><span>Private seller: <b>${escapeHtml(sp.full_name || "Spotter")}</b>${sp.verification_status ? " " + dnStatusBadge(sp.verification_status) : ""}</span><span>${money(c.price)}</span><span>${escapeHtml(dnWhere(c))}</span><span>Photos ${c.shot_count}/10</span></div>
     <div class="kv"><span>${[dnKm(c.mileage), c.transmission, c.fuel_type, c.colour].filter(Boolean).map(escapeHtml).join(" · ")}</span></div>
-    ${c.description ? `<div class="note-item" style="margin-top:8px;">${escapeHtml(c.description)}</div>` : ""}
+    ${c.description ? `<div class="note-item" style="margin-top:8px;">${fmtText(c.description)}</div>` : ""}
     <div class="secret"><b>Check before approving.</b> VIN: <b class="tabnum">${doc ? escapeHtml(doc.vin) : "—"}</b>
       ${doc ? `<button class="btn btn-ghost" data-viewdisc="${c.id}" style="padding:6px 10px;font-size:12px;width:auto;margin-left:6px;">View licence disc</button>` : `<span class="help">(no disc on file)</span>`}
       <div class="help" style="margin-top:4px;">Private — never shown to buyers or other Spotters. Make sure the VIN matches the disc, then check the photos.</div>
@@ -6340,7 +6370,7 @@ function tcMineHtml() {
       <div class="lead-top"><span class="lid tabnum">${escapeHtml(x.ref)}</span>${dnStatusBadge(tcStatusLabel(k, st))}</div>
       <div class="lead-name">${escapeHtml(tcTitle(k, x))}</div>
       <div class="kv"><span>${tcDetailLine(k, x)}</span></div>
-      ${x.description ? `<div class="note-item" style="margin-top:8px;">${escapeHtml(x.description)}</div>` : ""}
+      ${x.description ? `<div class="note-item" style="margin-top:8px;">${fmtText(x.description)}</div>` : ""}
       ${st === "Declined" && x.decline_reason ? `<div class="err" style="margin-top:8px;">AutoMarketer says: ${escapeHtml(x.decline_reason)}</div>` : ""}
       ${st === "Pending" ? `<p class="help" style="margin:8px 0 0;">Waiting for AutoMarketer’s approval${s.status === "Approved" ? "" : " (your company must be approved too)"}.</p>` : ""}
       ${st === "Approved" && s.status !== "Approved" ? `<p class="help" style="margin:8px 0 0;">Visible once your company is approved.</p>` : ""}
@@ -6406,7 +6436,7 @@ function tcFindCard(kind, x, asked, own) {
     <div class="kv" style="margin-top:6px;"><span>${tcDetailLine(kind, x)}</span></div>
     ${x.rate_note ? `<div class="kv"><span>Rate: <b>${escapeHtml(x.rate_note)}</b></span></div>` : ""}
     ${kind === "contract" && x.requirements ? `<div class="note-item" style="margin-top:8px;"><b>Requirements:</b> ${escapeHtml(x.requirements)}</div>` : ""}
-    ${x.description ? `<div class="note-item" style="margin-top:8px;">${escapeHtml(x.description)}</div>` : ""}
+    ${x.description ? `<div class="note-item" style="margin-top:8px;">${fmtText(x.description)}</div>` : ""}
     ${own ? "" : `<div style="margin-top:12px;">${asked
       ? `<span class="badge approved">Request sent — AutoMarketer will be in touch</span>`
       : `<button class="btn btn-primary" data-tcask="${x.id}" data-askkind="${kind}" style="width:auto;padding:10px 18px;font-size:13.5px;">I’m interested</button>`}
@@ -6669,7 +6699,7 @@ function tcPaintAdmin() {
         <div class="kv"><span>${tcDetailLine(k, x)}</span></div>
         ${x.rate_note ? `<div class="kv"><span>Rate: ${escapeHtml(x.rate_note)}</span></div>` : ""}
         ${k === "contract" && x.requirements ? `<div class="note-item" style="margin-top:8px;"><b>Requirements:</b> ${escapeHtml(x.requirements)}</div>` : ""}
-        ${x.description ? `<div class="note-item" style="margin-top:8px;">${escapeHtml(x.description)}</div>` : ""}
+        ${x.description ? `<div class="note-item" style="margin-top:8px;">${fmtText(x.description)}</div>` : ""}
         ${imgs.length ? `<div class="adm-car-photos">${imgs.map(u => `<a href="${escapeHtml(u)}" target="_blank" rel="noopener"><img src="${escapeHtml(u)}" alt=""></a>`).join("")}</div>` : ""}
         ${x.decline_reason ? `<div class="help" style="margin-top:6px;">Declined: ${escapeHtml(x.decline_reason)}</div>` : ""}
         <div class="btn-row" style="margin-top:12px;padding-top:0;flex-wrap:wrap;">
@@ -6754,7 +6784,7 @@ function renderNav() {
       <button type="button" class="nav-burger" data-role="navburger" aria-label="Menu" aria-expanded="${state.nav.mobileOpen}">${state.nav.mobileOpen ? "✕" : "☰"}</button>
       <div class="nav-links ${state.nav.mobileOpen ? "open" : ""}">
         <a href="#" class="nav-home" data-navgo="landing">Home</a>
-        <a href="#" data-navgo="cars">Cars</a>
+        <a href="#" class="nav-cars" data-navgo="cars">Cars<span class="nav-sub">Browse vehicles that are available</span></a>
         ${navDrop("services", "Buy &amp; sell", [
           [`data-navstart="buy"`, "Buy a vehicle", "Tell us what you need"],
           [`data-navstart="sell"`, "Sell a vehicle", "We find you the right buyer"],
@@ -7003,6 +7033,66 @@ function renderFooter() {
     </div>
   </footer>`;
 }
+
+
+/* ==========================================================================
+   DRAG & DROP PHOTOS (dealers, Spotters and private sellers share the same photo steps)
+   - Drop one photo on a tile  -> it fills that tile.
+   - Drop many photos on the big drop box (or tap it and pick several on a phone) -> they fill the empty tiles in order.
+   - Drop the licence-disc photo on its tile.
+   Everything goes through the same code as "Take or choose photo", so plate blurring, background removal,
+   backdrop and the listing-strength ring behave exactly as before.
+   ========================================================================== */
+const DN_IMG_RX = /\.(jpe?g|png|webp|heic|heif|gif|bmp)$/i;
+function dnIsImageFile(f) { return f && (/^image\//.test(f.type) || DN_IMG_RX.test(f.name || "")); }
+async function dnDropFiles(fileList, firstSlot) {
+  const A = state.dealerAdd; if (!A || !document.getElementById("dn_shots")) return;
+  let files = Array.from(fileList || []);
+  const bad = files.filter(f => !dnIsImageFile(f)).length;
+  files = files.filter(dnIsImageFile);
+  if (!files.length) { showToast("Please drop photo files (JPG or PNG)."); return; }
+  const queue = [];
+  if (firstSlot && dnSlot(firstSlot)) queue.push([firstSlot, files.shift()]);
+  files.sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { numeric: true }));   // IMG_001, IMG_002 ... stay in order
+  const empties = dnAllSlots().filter(s => !A.shots[s.id] && s.id !== firstSlot);
+  let skipped = 0;
+  for (const f of files) { const s = empties.shift(); if (!s) { skipped++; continue; } queue.push([s.id, f]); }
+  if (skipped) showToast(skipped + (skipped > 1 ? " photos" : " photo") + " didn't fit: every photo spot is full. Remove one to add another.");
+  else if (bad) showToast(bad + (bad > 1 ? " files were" : " file was") + " not a photo and was skipped.");
+  else if (queue.length > 1) showToast("Adding " + queue.length + " photos…");
+  for (const [id, f] of queue) { if (!document.getElementById("dn_shots")) break; await dnHandleFile(id, f); }
+}
+(function dnInitDrop() {
+  if (window.__dnDropInit) return; window.__dnDropInit = true;
+  const hasFiles = (e) => e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files");
+  const onPhotoStep = () => !!(document.getElementById("dn_shots") || document.querySelector("[data-disc]"));
+  const targetOf = (e) => (e.target && e.target.closest) ? e.target.closest("[data-shot],[data-disc],#dn_drop") : null;
+  const clear = () => { document.querySelectorAll(".drop-over").forEach(x => x.classList.remove("drop-over")); document.body.classList.remove("dn-dragging"); };
+  document.addEventListener("dragenter", (e) => { if (hasFiles(e) && onPhotoStep()) document.body.classList.add("dn-dragging"); });
+  document.addEventListener("dragover", (e) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault();                                   // also stops the browser opening a photo that is dropped in the wrong place
+    const t = onPhotoStep() ? targetOf(e) : null;
+    document.querySelectorAll(".drop-over").forEach(x => { if (x !== t) x.classList.remove("drop-over"); });
+    if (t) { t.classList.add("drop-over"); e.dataTransfer.dropEffect = "copy"; } else e.dataTransfer.dropEffect = "none";
+  });
+  document.addEventListener("dragleave", (e) => { if (!e.relatedTarget) clear(); });
+  document.addEventListener("drop", (e) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    const t = onPhotoStep() ? targetOf(e) : null; clear();
+    if (!t) return;
+    const files = Array.from(e.dataTransfer.files || []);
+    if (t.hasAttribute("data-disc")) { const f = files.find(dnIsImageFile); if (f) dnHandleDisc(f); else showToast("Please drop a photo of the licence disc."); return; }
+    dnDropFiles(files, t.getAttribute("data-shot"));
+  });
+  document.addEventListener("dragend", clear);
+  document.addEventListener("change", (e) => {           // tap the drop box and choose several photos
+    const inp = e.target; if (!inp || inp.id !== "dn_dropinput") return;
+    const files = Array.from(inp.files || []); inp.value = "";
+    dnDropFiles(files, null);
+  });
+})();
 
 
 /* =================================== BOOT =================================== */
